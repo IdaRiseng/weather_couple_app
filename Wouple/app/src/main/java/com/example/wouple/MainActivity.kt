@@ -115,10 +115,6 @@ class MainActivity : ComponentActivity() {
                      placeholder = { Text(modifier = Modifier.padding(start = 65.dp),
                          color = Bubbles,
                          text = "Set Location")
-                         val intent  = Intent(activity, SecondActivity::class.java).apply {
-                             putExtra("location", "Location")
-                         }
-                         activity.startActivity(intent)
                      }
                  )
              }
