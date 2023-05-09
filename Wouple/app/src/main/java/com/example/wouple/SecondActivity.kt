@@ -20,6 +20,8 @@ import androidx.compose.ui.Alignment.Companion.BottomStart
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterVertically
+import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Alignment.Companion.Top
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Alignment.Companion.TopEnd
@@ -64,7 +66,7 @@ fun SecondCardView(){
             .padding(30.dp, 30.dp, 30.dp, 30.dp),
     ){
         Box(modifier = Modifier
-            .size(450.dp, 260.dp)
+            .size(400.dp, 450.dp)
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
             .background(Dark20)
         ) {
@@ -73,22 +75,36 @@ fun SecondCardView(){
             val activity = LocalContext.current
             val intent  = Intent(activity, MainActivity::class.java)
             val data = intent.getStringExtra("location")
+
+            Column() {
+
             Row(verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center) {
-                Icon(painter = painterResource(id = R.drawable.calendar), contentDescription ="", tint = Corn, modifier = Modifier
-                    .size(30.dp)
-                    .padding(start = 10.dp, top = 10.dp))
 
+
+                Icon(painter = painterResource(id = R.drawable.calendar), contentDescription ="", tint = Bubbles.copy(alpha = 0.8f), modifier = Modifier
+                    .size(20.dp)
+                    .offset(30.dp, 8.dp))
+
+                Text(modifier = Modifier
+                    .align(CenterVertically)
+                    .offset(36.dp, 8.dp),
+                    text = "10 - DAY FORECAST",
+                color = Color.LightGray.copy(alpha = 0.8f))
+
+
+            }
                 Divider(
-                    color = Corn,
+                    color = Spiro.copy(alpha = 0.8f),
                     thickness = 1.dp,
                     modifier = Modifier
-                        .padding(top = 30.dp)
+                        .offset(20.dp, 10.dp)
+                        .padding(end = 30.dp)
                 )
-            }
-
 
             }
+
+        }
 }
 }
 
