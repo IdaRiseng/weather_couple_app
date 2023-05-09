@@ -297,4 +297,3 @@ fun ImageWeatherView(weatherImage: Int) {
         )
     }
 }
-
