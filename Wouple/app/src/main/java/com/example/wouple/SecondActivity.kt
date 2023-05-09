@@ -50,12 +50,13 @@ class SecondActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-           SecondCardView()
+            SecondCardView()
         }
     }
 }
+
 @Composable
-fun SecondCardView(){
+fun SecondCardView() {
     Column(
         modifier = Modifier
             .fillMaxSize(1f)
@@ -64,36 +65,46 @@ fun SecondCardView(){
                 contentScale = ContentScale.Crop
             )
             .padding(30.dp, 30.dp, 30.dp, 30.dp),
-    ){
-        Box(modifier = Modifier
-            .size(400.dp, 450.dp)
-            .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
-            .background(Dark20)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(400.dp, 450.dp)
+                .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
+                .background(Dark20)
         ) {
             var text by remember { mutableStateOf(("")) }
             val focusManager = LocalFocusManager.current
             val activity = LocalContext.current
-            val intent  = Intent(activity, MainActivity::class.java)
+            val intent = Intent(activity, MainActivity::class.java)
             val data = intent.getStringExtra("location")
 
             Column() {
 
-            Row(verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
 
 
-                Icon(painter = painterResource(id = R.drawable.calendar), contentDescription ="", tint = Bubbles.copy(alpha = 0.8f), modifier = Modifier
-                    .size(20.dp)
-                    .offset(30.dp, 8.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.calendar),
+                        contentDescription = "",
+                        tint = Bubbles.copy(alpha = 0.8f),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .offset(30.dp, 8.dp)
+                    )
 
-                Text(modifier = Modifier
-                    .align(CenterVertically)
-                    .offset(36.dp, 8.dp),
-                    text = "10 - DAY FORECAST",
-                color = Color.LightGray.copy(alpha = 0.8f))
+                    Text(
+                        modifier = Modifier
+                            .align(CenterVertically)
+                            .offset(36.dp, 8.dp),
+                        text = "10 - DAY FORECAST",
+                        color = Color.LightGray.copy(alpha = 0.8f)
+                    )
 
 
-            }
+                }
                 Divider(
                     color = Spiro.copy(alpha = 0.8f),
                     thickness = 1.dp,
@@ -105,13 +116,13 @@ fun SecondCardView(){
             }
 
         }
-}
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview2() {
     WoupleTheme {
-       SecondCardView()
+        SecondCardView()
     }
 }
