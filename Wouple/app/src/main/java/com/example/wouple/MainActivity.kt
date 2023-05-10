@@ -1,58 +1,55 @@
 package com.example.wouple
 
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateSizeAsState
-
 import androidx.compose.foundation.Image
-
 import androidx.compose.foundation.background
-
 import androidx.compose.foundation.clickable
-
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-
-import androidx.compose.material.*
-import androidx.compose.runtime.*
-
-import androidx.compose.ui.Alignment.Companion.BottomCenter
-import androidx.compose.ui.Alignment.Companion.BottomEnd
-import androidx.compose.ui.Alignment.Companion.BottomStart
-import androidx.compose.ui.Alignment.Companion.Center
-import androidx.compose.ui.Alignment.Companion.CenterEnd
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.Alignment.Companion.CenterStart
-import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.*
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.paint
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-
 import androidx.compose.ui.res.painterResource
-
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-
-
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.airbnb.lottie.LottieAnimationView
-import com.airbnb.lottie.LottieComposition
-
-
-import com.example.wouple.ui.theme.*
+import com.example.wouple.ui.theme.Bubbles
+import com.example.wouple.ui.theme.Corn
+import com.example.wouple.ui.theme.Dark10
+import com.example.wouple.ui.theme.Dark20
+import com.example.wouple.ui.theme.Spiro
+import com.example.wouple.ui.theme.Tangerine
+import com.example.wouple.ui.theme.WoupleTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -60,413 +57,243 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            FirstCardView()
+            val firstWeatherImage = R.drawable.rainyday
+            val secondWeatherImage = R.drawable.cloudsnow
+
+            FirstCardView(firstWeatherImage, secondWeatherImage)
         }
     }
 }
 
-
-@Composable
-fun FirstCardView() {
-    val activity = LocalContext.current
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize(1f)
-            .paint(
-                painter = painterResource(id = R.drawable.rainybackground),
-                contentScale = ContentScale.Crop
-            )
-            .padding(10.dp, 20.dp, 10.dp, 20.dp),
-        horizontalAlignment = CenterHorizontally
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(300.dp, 360.dp)
-                .weight(1f, true)
-                .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
-                .background(Dark20)
-        ) {
-            var text by remember { mutableStateOf(("")) }
-            val focusManager = LocalFocusManager.current
-
-            Row(
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .fillMaxWidth(1f)
-                    .height(50.dp)
-            ) {
-
-                TextField(
-                    value = text.uppercase(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Spiro,
-                        unfocusedBorderColor = Bubbles.copy(alpha = 0.6f),
-                        textColor = Corn
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Search
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onSearch = { focusManager.clearFocus() }
-                    ),
-                    onValueChange = { newText ->
-                        text = newText
-                    },
-                    placeholder = {
-                        Text(
-                            modifier = Modifier.padding(start = 65.dp),
-                            color = Bubbles,
-                            text = "Set Location"
-                        )
-                    }
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(bottom = 90.dp, start = 5.dp)
-                    .align(CenterStart)
-                    .size(140.dp)
-                    .background(Dark10, shape = RoundedCornerShape(20.dp))
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_time_foreground),
-                    contentDescription = "",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .alpha(0.9f)
-                        .align(BottomCenter),
-                    tint = Tangerine
-                )
-                Text(
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-                        .align(TopCenter),
-                    text = "TIME",
-                    color = Corn,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    modifier = Modifier
-                        .align(Center),
-                    fontSize = 45.sp,
-                    text = "03:00",
-                    color = Bubbles.copy(alpha = 1f),
-                )
-
-            }
-
-            Box(modifier = Modifier
-                .clickable {
-                    val intent = Intent(activity, SecondActivity::class.java)
-                    activity.startActivity(intent)
-                }
-                .align(CenterEnd)
-                .padding(bottom = 90.dp, end = 5.dp)
-                .size(140.dp)
-                .background(Dark10, RoundedCornerShape(20.dp))
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.heat), contentDescription = "",
-                    modifier = Modifier
-                        .alpha(0.9f)
-                        .size(70.dp)
-                        .padding(top = 10.dp, end = 25.dp)
-                        .align(CenterEnd),
-                    tint = Tangerine
-                )
-
-                Text(
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-                        .align(TopCenter),
-                    text = "TEMPERATURE",
-                    color = Corn,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    modifier = Modifier
-                        .align(Center)
-                        .padding(end = 25.dp, top = 10.dp),
-                    fontSize = 50.sp,
-                    text = "-5°",
-                    color = Bubbles.copy(alpha = 1f),
-                )
-
-                Text(
-                    modifier = Modifier
-                        .padding(bottom = 10.dp)
-                        .align(BottomCenter),
-                    text = "Snowy",
-                    color = Corn,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Light
-                )
-
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(bottom = 5.dp, end = 5.dp)
-                    .align(BottomEnd)
-                    .size(140.dp)
-                    .background(Dark10, RoundedCornerShape(20.dp))
-            ) {
-
-
-                Image(painter = painterResource(id = R.drawable.cloudsnow),
-                    contentDescription = "",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .clickable {
-                            val intent = Intent(activity, SecondActivity::class.java)
-                            activity.startActivity(intent)
-                        }
-                        .align(BottomCenter)
-                        .size(130.dp)
-                        .padding(bottom = 2.dp, end = 2.dp))
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(bottom = 5.dp, start = 5.dp)
-                    .align(BottomStart)
-                    .size(140.dp)
-                    .background(Dark10, RoundedCornerShape(20.dp))
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.wind), contentDescription = "",
-                    modifier = Modifier
-                        .alpha(0.9f)
-                        .size(38.dp)
-                        .padding(top = 6.dp, bottom = 10.dp)
-                        .align(BottomCenter),
-                    tint = Tangerine
-                )
-                Text(
-                    modifier = Modifier
-                        .align(Center),
-                    fontSize = 30.sp,
-                    text = "16km/h",
-                    color = Bubbles.copy(alpha = 1f)
-                )
-
-                Text(
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-                        .align(TopCenter),
-                    text = "WIND",
-                    color = Corn,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-
-            }
-
-        }
-
-        Spacer(modifier = Modifier.padding(10.dp))
-
-        Box(
-            modifier = Modifier
-                .size(300.dp, 360.dp)
-                .weight(1f, true)
-                .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
-                .background(Dark20)
-        ) {
-            var text by remember { mutableStateOf(("")) }
-            val focusManager = LocalFocusManager.current
-            Row(
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .fillMaxWidth(1f)
-                    .height(60.dp)
-            ) {
-
-                TextField(
-                    value = text.uppercase(),
-                    shape = CircleShape,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Tangerine,
-                        unfocusedBorderColor = Bubbles.copy(alpha = 0.6f),
-                        textColor = Corn
-                    ),
-                    placeholder = {
-                        Text(
-                            modifier = Modifier.padding(start = 65.dp),
-                            color = Bubbles,
-                            text = "Set Location"
-                        )
-                    },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Search
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onSearch = { focusManager.clearFocus() }
-                    ),
-                    onValueChange = {
-                        text = it
-                    }
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(bottom = 90.dp, start = 5.dp)
-                    .align(CenterStart)
-                    .size(140.dp)
-                    .background(Dark10, shape = RoundedCornerShape(20.dp))
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_time_foreground),
-                    contentDescription = "",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .alpha(0.9f)
-                        .align(BottomCenter),
-                    tint = Tangerine
-                )
-                Text(
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-                        .align(TopCenter),
-                    text = "TIME",
-                    color = Corn,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    modifier = Modifier
-                        .align(Center),
-                    fontSize = 45.sp,
-                    text = "03:00",
-                    color = Bubbles.copy(alpha = 1f),
-                )
-
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(bottom = 90.dp, end = 5.dp)
-                    .align(CenterEnd)
-                    .size(140.dp)
-                    .background(Dark10, RoundedCornerShape(20.dp))
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.heat), contentDescription = "",
-                    modifier = Modifier
-                        .alpha(0.9f)
-                        .size(70.dp)
-                        .padding(top = 10.dp, end = 25.dp)
-                        .align(CenterEnd),
-                    tint = Tangerine
-                )
-
-                Text(
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-                        .align(TopCenter),
-                    text = "TEMPERATURE",
-                    color = Corn,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    modifier = Modifier
-                        .align(Center)
-                        .padding(end = 25.dp, top = 10.dp),
-                    fontSize = 50.sp,
-                    text = "7°",
-                    color = Bubbles.copy(alpha = 1f),
-                )
-                Text(
-                    modifier = Modifier
-                        .padding(bottom = 10.dp)
-                        .align(BottomCenter),
-                    text = "Rainy",
-                    color = Corn,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Light
-                )
-
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(bottom = 5.dp, end = 5.dp)
-                    .align(BottomEnd)
-                    .size(140.dp)
-                    .background(Dark10, RoundedCornerShape(20.dp))
-            ) {
-
-                Image(
-                    painter = painterResource(id = R.drawable.rainyday),
-                    contentDescription = "",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .align(BottomCenter)
-                        .size(130.dp)
-                        .padding(bottom = 2.dp, end = 2.dp)
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .padding(bottom = 5.dp, start = 5.dp)
-                    .align(BottomStart)
-                    .size(140.dp)
-                    .background(Dark10, RoundedCornerShape(20.dp))
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.wind), contentDescription = "",
-                    modifier = Modifier
-                        .alpha(0.9f)
-                        .size(38.dp)
-                        .padding(top = 6.dp, bottom = 10.dp)
-                        .align(BottomCenter),
-                    tint = Tangerine
-                )
-                Text(
-                    modifier = Modifier
-                        .align(Center),
-                    fontSize = 30.sp,
-                    text = "16km/h",
-                    color = Bubbles.copy(alpha = 1f)
-                )
-
-                Text(
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-                        .align(TopCenter),
-                    text = "WIND",
-                    color = Corn,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-
-            }
-
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
+    val firstWeatherImage = R.drawable.rainyday
+    val secondWeatherImage = R.drawable.cloudsnow
+
     WoupleTheme {
-        FirstCardView()
+        FirstCardView(firstWeatherImage, secondWeatherImage)
+    }
+}
+
+@Composable
+fun FirstCardView(firstWeatherImage: Int, secondWeatherImage: Int) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .paint(
+                painter = painterResource(id = R.drawable.rainybackground),
+                contentScale = ContentScale.Crop
+            ),
+        horizontalAlignment = CenterHorizontally
+    ) {
+        //Two Blue cards on one page
+        Box(Modifier.weight(1f)) {
+            BlueCardView(firstWeatherImage)
+        }
+        Box(Modifier.weight(1f)) {
+            BlueCardView(secondWeatherImage)
+        }
+    }
+}
+
+@Composable
+fun BlueCardView(weatherImage: Int) {
+    //Blue Card
+    Column(
+        Modifier
+            .padding(vertical = 8.dp, horizontal = 40.dp)
+            .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
+            .background(Dark20)
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+        horizontalAlignment = CenterHorizontally
+    ) {
+        //This is the top "set location view
+        SetLocationTextField()
+
+        //Row goes that way -->>
+        //Weight makes the boxes equal sizes no matter what phone they have
+        Row(Modifier.weight(1f)) {
+            Box(Modifier.weight(1f)) { TimeView() }
+            Box(Modifier.weight(1f)) { TemperatureView() }
+        }
+        Row(Modifier.weight(1f)) {
+            Box(Modifier.weight(1f)) { WindView() }
+            Box(Modifier.weight(1f)) { ImageWeatherView(weatherImage) }
+        }
+    }
+}
+
+@Composable
+fun SetLocationTextField() {
+    var text by remember { mutableStateOf(("")) }
+    val focusManager = LocalFocusManager.current
+
+    TextField(
+        value = text.uppercase(),
+        shape = RoundedCornerShape(20.dp),
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Spiro,
+            unfocusedBorderColor = Bubbles.copy(alpha = 0.6f),
+            textColor = Corn
+        ),
+        singleLine = true,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Search
+        ),
+        keyboardActions = KeyboardActions(
+            onSearch = { focusManager.clearFocus() }
+        ),
+        onValueChange = { newText ->
+            text = newText
+        },
+        placeholder = {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                color = Bubbles,
+                text = "Set Location"
+            )
+        },
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+}
+
+@Composable
+fun TimeView() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(4.dp)
+            .background(Dark10, shape = RoundedCornerShape(20.dp)),
+        horizontalAlignment = CenterHorizontally
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(top = 10.dp),
+            text = "TIME",
+            color = Corn,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            modifier = Modifier,
+            fontSize = 45.sp,
+            text = "03:00",
+            color = Bubbles.copy(alpha = 1f),
+        )
+        Icon(
+            painter = painterResource(id = R.drawable.ic_time_foreground),
+            contentDescription = "",
+            modifier = Modifier
+                .size(40.dp)
+                .alpha(0.9f),
+            tint = Tangerine
+        )
+    }
+}
+
+@Composable
+fun TemperatureView() {
+    val activity = LocalContext.current
+    Column(modifier = Modifier
+        .clickable {
+            val intent = Intent(activity, SecondActivity::class.java)
+            activity.startActivity(intent)
+        }
+        .padding(4.dp)
+        .fillMaxSize()
+        .background(Dark10, RoundedCornerShape(20.dp)),
+        horizontalAlignment = CenterHorizontally
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(top = 10.dp),
+            text = "TEMPERATURE",
+            color = Corn,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Row {
+            Text(
+                fontSize = 50.sp,
+                text = "-5°",
+                color = Bubbles.copy(alpha = 1f),
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.heat), contentDescription = "",
+                modifier = Modifier
+                    .alpha(0.9f)
+                    .padding(top = 12.dp)
+                    .size(50.dp),
+                tint = Tangerine
+            )
+        }
+        Text(
+            modifier = Modifier.padding(bottom = 10.dp),
+            text = "Snowy",
+            color = Corn,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Light
+        )
+    }
+}
+
+@Composable
+fun WindView() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(4.dp)
+            .background(Dark10, RoundedCornerShape(20.dp)),
+        horizontalAlignment = CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(top = 10.dp),
+            text = "WIND",
+            color = Corn,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            modifier = Modifier,
+            fontSize = 30.sp,
+            text = "16km/h",
+            color = Bubbles.copy(alpha = 1f)
+        )
+        Icon(
+            painter = painterResource(id = R.drawable.wind), contentDescription = "",
+            modifier = Modifier
+                .alpha(0.9f)
+                .size(38.dp)
+                .padding(top = 6.dp, bottom = 10.dp),
+            tint = Tangerine
+        )
+    }
+}
+
+@Composable
+fun ImageWeatherView(weatherImage: Int) {
+    val activity = LocalContext.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(4.dp)
+            .background(Dark10, RoundedCornerShape(20.dp))
+    ) {
+        Image(painter = painterResource(id = weatherImage),
+            contentDescription = "",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .clickable {
+                    val intent = Intent(activity, SecondActivity::class.java)
+                    activity.startActivity(intent)
+                }
+                .fillMaxSize()
+                .padding(16.dp)
+        )
     }
 }
