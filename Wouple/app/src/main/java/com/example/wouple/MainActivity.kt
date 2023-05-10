@@ -171,7 +171,7 @@ fun TimeView() {
     ) {
         Text(
             modifier = Modifier
-                .padding(top = 10.dp),
+                .padding(top = 20.dp),
             text = "TIME",
             color = Corn,
             fontSize = 14.sp,
@@ -209,7 +209,7 @@ fun TemperatureView() {
     ) {
         Text(
             modifier = Modifier
-                .padding(top = 10.dp),
+                .padding(top = 20.dp),
             text = "TEMPERATURE",
             color = Corn,
             fontSize = 14.sp,
