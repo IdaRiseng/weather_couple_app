@@ -22,9 +22,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,11 +64,41 @@ fun SecondCardView() {
             .verticalScroll(scrollStateOne),
         horizontalAlignment = CenterHorizontally
     ) {
+        Locationview()
         HourlyForecastView()
-        TenDayForeCastView()
+        WeeklyForeCastView()
         RainFallView()
+        HumidityView()
     }
 
+}
+
+@Composable
+fun Locationview() {
+    Column(
+        modifier = Modifier
+            .padding(top = 10.dp)
+            .fillMaxWidth(1f),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "OSLO",
+            fontSize = 24.sp,
+            color = Color.Black,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = "-5°",
+            color = Color.Black,
+            fontSize = 48.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = "Snowy",
+            color = Color.Black,
+            fontSize = 24.sp,
+        )
+    }
 }
 
 @Composable
@@ -76,22 +109,25 @@ fun HourlyForecastView() {
             .padding(vertical = 16.dp, horizontal = 12.dp)
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
             .background(Dark20)
-    ) {
-        Row(modifier = Modifier.padding(start = 16.dp)) {
+            .padding(16.dp),
+
+        ) {
+        Row(modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)) {
 
 
             Icon(
-                painter = painterResource(id = R.drawable.calendar),
+                painter = painterResource(id = R.drawable.clock),
                 contentDescription = "",
-                tint = Bubbles.copy(alpha = 0.8f),
+                tint = Corn.copy(alpha = 0.6f),
                 modifier = Modifier
                     .size(20.dp)
             )
             Text(
                 modifier = Modifier
-                    .align(CenterVertically),
+                    .align(CenterVertically)
+                    .padding(start = 4.dp),
                 text = "HOURLY FORECAST",
-                color = Color.LightGray.copy(alpha = 0.8f)
+                color = Bubbles.copy(alpha = 0.8f)
             )
         }
         Divider(
@@ -138,13 +174,14 @@ fun Hours() {
 }
 
 @Composable
-fun TenDayForeCastView() {
+fun WeeklyForeCastView() {
     Column(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp)
             .fillMaxWidth()
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
             .background(Dark20)
+            .padding(16.dp)
     ) {
         var text by remember { mutableStateOf(("")) }
         val focusManager = LocalFocusManager.current
@@ -154,23 +191,24 @@ fun TenDayForeCastView() {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(top = 8.dp, start = 18.dp)
+            modifier = Modifier.padding(top = 8.dp, start = 18.dp, bottom = 8.dp)
         ) {
 
 
             Icon(
                 painter = painterResource(id = R.drawable.calendar),
                 contentDescription = "",
-                tint = Bubbles.copy(alpha = 0.8f),
+                tint = Corn.copy(alpha = 0.8f),
                 modifier = Modifier
                     .size(20.dp)
             )
 
             Text(
                 modifier = Modifier
-                    .align(CenterVertically),
-                text = "10 - DAY FORECAST",
-                color = Color.LightGray.copy(alpha = 0.8f)
+                    .align(CenterVertically)
+                    .padding(start = 4.dp),
+                text = "WEEKLY FORECAST",
+                color = Bubbles.copy(alpha = 0.8f)
             )
 
 
@@ -228,47 +266,167 @@ fun RainFallView() {
         Box(modifier = Modifier.weight(1f)) {
             Column(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp)
-                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 8.dp)
                     .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
                     .background(Dark20)
-                    .padding(8.dp)
-                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(90.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = CenterHorizontally
             ) {
-                Text(text = "0mm expected")
+                Row(
+                    modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
+
+                    ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.temperaturea),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .padding(top = 2.dp),
+                        Tangerine.copy(alpha = 0.8f)
+
+                    )
+
+                    Text(
+                        text = "FEELS LIKE",
+                        color = Corn
+                    )
+                }
+                Text(
+                    modifier = Modifier,
+                    text = "-9°",
+                    color = Corn,
+                    fontSize = 32.sp,
+
+                    )
             }
         }
         Box(modifier = Modifier.weight(1f)) {
             Column(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp)
+                    .padding(start = 8.dp, end = 16.dp)
                     .fillMaxWidth()
                     .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
                     .background(Dark20)
-                    .padding(8.dp)
+                    .padding(16.dp)
+                    .height(90.dp)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(modifier = Modifier.padding(top = 8.dp)) {
-                Icon(
-                    painter = painterResource(id = R.drawable.drop), contentDescription = null,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .padding(top = 2.dp),
-                    Corn,
-                )
-                    Text(modifier = Modifier,
+                    Icon(
+                        painter = painterResource(id = R.drawable.drop), contentDescription = null,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .padding(top = 2.dp),
+                        Tangerine.copy(alpha = 0.8f),
+                    )
+                    Text(
+                        modifier = Modifier,
                         text = "RAINFALL",
-                        color = Corn)
+                        color = Corn
+                    )
                 }
-                Text(modifier = Modifier,
+                Text(
+                    modifier = Modifier,
                     text = "O mm",
-                color = Corn,
-               fontSize = 32.sp)
+                    color = Corn,
+                    fontSize = 32.sp
+                )
 
-                Text(modifier = Modifier,
+                Text(
+                    modifier = Modifier,
                     text = "Expected Today",
-                color = Corn)
+                    color = Corn
+                )
+
+            }
+        }
+    }
+}
+
+@Composable
+fun HumidityView() {
+    Row(modifier = Modifier.padding(top = 8.dp)) {
+        Box(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 8.dp)
+                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
+                    .background(Dark20)
+                    .padding(16.dp)
+                    .height(90.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
+
+                    ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.humidity),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .padding(top = 2.dp),
+                        Tangerine.copy(alpha = 0.8f)
+
+                    )
+
+                    Text(
+                        text = "HUMIDITY",
+                        color = Corn
+                    )
+                }
+                Text(
+                    modifier = Modifier,
+                    text = "%64",
+                    color = Corn,
+                    fontSize = 32.sp,
+
+                    )
+            }
+        }
+        Box(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .padding(start = 8.dp, end = 16.dp)
+                    .fillMaxWidth()
+                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
+                    .background(Dark20)
+                    .padding(16.dp)
+                    .height(90.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(modifier = Modifier.padding(top = 8.dp)) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.eye), contentDescription = null,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .padding(top = 2.dp),
+                        Tangerine.copy(alpha = 0.8f),
+                    )
+                    Text(
+                        modifier = Modifier,
+                        text = "VISIBILITY",
+                        color = Corn
+                    )
+                }
+                Text(
+                    modifier = Modifier,
+                    text = "11 km",
+                    color = Corn,
+                    fontSize = 32.sp
+                )
+
+                Text(
+                    modifier = Modifier,
+                    text = "Expected Today",
+                    color = Corn
+                )
+
             }
         }
     }
