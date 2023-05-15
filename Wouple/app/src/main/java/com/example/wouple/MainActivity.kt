@@ -83,7 +83,7 @@ fun FirstCardView(firstWeatherImage: Int, secondWeatherImage: Int) {
         modifier = Modifier
             .fillMaxSize()
             .paint(
-                painter = painterResource(id = R.drawable.rainybackground),
+                painter = painterResource(id = R.drawable.backgroundthree),
                 contentScale = ContentScale.Crop
             ),
         horizontalAlignment = CenterHorizontally
