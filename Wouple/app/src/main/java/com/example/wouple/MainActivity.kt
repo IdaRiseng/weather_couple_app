@@ -20,15 +20,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -45,6 +48,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.model.api.ApiRequest
+import com.example.wouple.model.api.Hourly
+import com.example.wouple.model.api.HourlyUnits
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Bubbles
 import com.example.wouple.ui.theme.Corn
@@ -58,12 +63,13 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.StringBuilder
 
 const val BASE_URL = "https://api.open-meteo.com"
 
 class MainActivity : ComponentActivity() {
 
+
+    private val temp: MutableState<TemperatureResponse?> = mutableStateOf(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -71,12 +77,25 @@ class MainActivity : ComponentActivity() {
             val firstWeatherImage = R.drawable.rainyday
             val secondWeatherImage = R.drawable.cloudsnow
 
-            FirstCardView(firstWeatherImage, secondWeatherImage)
-            getCurrentData()
+            if (temp.value == null) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                temp.value?.let { FirstCardView(it, firstWeatherImage, secondWeatherImage) }
+            }
         }
     }
 
-    private fun getCurrentData() {
+    override fun onResume() {
+        super.onResume()
+
+        getCurrentData {
+            temp.value = it
+        }
+    }
+
+    private fun getCurrentData(onSuccessCall: (TemperatureResponse) -> Unit) {
         val context = this.applicationContext
         val api = Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -84,13 +103,13 @@ class MainActivity : ComponentActivity() {
             .build()
             .create(ApiRequest::class.java)
 
-        api.getTemperature().enqueue(object : Callback<List<TemperatureResponse>> {
-            override fun onFailure(call: Call<List<TemperatureResponse>>, t: Throwable) {
-                Toast.makeText(context, "i did not get the info", Toast.LENGTH_LONG).show()
+        api.getTemperature().enqueue(object : Callback<TemperatureResponse> {
+            override fun onFailure(call: Call<TemperatureResponse>, t: Throwable) {
+                Toast.makeText(context, t.message, Toast.LENGTH_LONG).show()
             }
 
-            override fun onResponse(call: Call<List<TemperatureResponse>>, response: Response<List<TemperatureResponse>>) {
-                Toast.makeText(context, "i got info!", Toast.LENGTH_LONG).show()
+            override fun onResponse(call: Call<TemperatureResponse>, response: Response<TemperatureResponse>) {
+                response.body()?.let { onSuccessCall(it) }
             }
         })
     }
@@ -102,14 +121,25 @@ class MainActivity : ComponentActivity() {
 fun DefaultPreview() {
     val firstWeatherImage = R.drawable.rainyday
     val secondWeatherImage = R.drawable.cloudsnow
+    val temperature = TemperatureResponse(
+        elevation = 3.0,
+        generationtime_ms = 3.0,
+        hourly = Hourly(listOf(), listOf()),
+        hourly_units = HourlyUnits("", ""),
+        latitude = 3.0,
+        longitude = 3.0,
+        timezone = "yeet",
+        timezone_abbreviation = "woop",
+        utc_offset_seconds = 2
+    )
 
     WoupleTheme {
-        FirstCardView(firstWeatherImage, secondWeatherImage)
+        FirstCardView(temperature, firstWeatherImage, secondWeatherImage)
     }
 }
 
 @Composable
-fun FirstCardView(firstWeatherImage: Int, secondWeatherImage: Int) {
+fun FirstCardView(temperature: TemperatureResponse, firstWeatherImage: Int, secondWeatherImage: Int) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -160,7 +190,7 @@ fun BlueCardView(weatherImage: Int) {
 fun SetLocationTextField() {
     var text by remember { mutableStateOf(("")) }
     val focusManager = LocalFocusManager.current
-    
+
     TextField(
         value = text.uppercase(),
         shape = RoundedCornerShape(20.dp),

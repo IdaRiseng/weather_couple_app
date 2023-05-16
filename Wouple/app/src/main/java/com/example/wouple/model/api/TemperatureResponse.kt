@@ -1,8 +1,5 @@
 package com.example.wouple.model.api
 
-import com.example.wouple.model.api.Hourly
-import com.example.wouple.model.api.HourlyUnits
-
 data class TemperatureResponse(
     val elevation: Double,
     val generationtime_ms: Double,
