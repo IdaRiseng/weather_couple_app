@@ -3,6 +3,7 @@ package com.example.wouple
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -76,6 +77,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun getCurrentData() {
+        val context = this.applicationContext
         val api = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -84,11 +86,11 @@ class MainActivity : ComponentActivity() {
 
         api.getTemperature().enqueue(object : Callback<List<TemperatureResponse>> {
             override fun onFailure(call: Call<List<TemperatureResponse>>, t: Throwable) {
-
+                Toast.makeText(context, "i did not get the info", Toast.LENGTH_LONG).show()
             }
 
             override fun onResponse(call: Call<List<TemperatureResponse>>, response: Response<List<TemperatureResponse>>) {
-              
+                Toast.makeText(context, "i got info!", Toast.LENGTH_LONG).show()
             }
         })
     }
