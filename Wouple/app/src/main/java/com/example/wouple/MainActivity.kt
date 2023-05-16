@@ -89,13 +89,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-
-        getCurrentData(onSuccessCall = {
-            temp.value = it
-        })
+        getCurrentData()
     }
 
-    private fun getCurrentData(onSuccessCall: (TemperatureResponse) -> Unit) {
+    private fun getCurrentData() {
         val context = this.applicationContext
         val api = Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -109,7 +106,7 @@ class MainActivity : ComponentActivity() {
             }
 
             override fun onResponse(call: Call<TemperatureResponse>, response: Response<TemperatureResponse>) {
-                response.body()?.let { onSuccessCall(it) }
+                temp.value = response.body()
             }
         })
     }
