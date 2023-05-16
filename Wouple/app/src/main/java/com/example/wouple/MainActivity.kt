@@ -69,30 +69,33 @@ const val BASE_URL = "https://api.open-meteo.com"
 class MainActivity : ComponentActivity() {
 
 
-    private val temp: MutableState<TemperatureResponse?> = mutableStateOf(null)
+    private val temp1: MutableState<TemperatureResponse?> = mutableStateOf(null)
+    private val temp2: MutableState<TemperatureResponse?> = mutableStateOf(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val firstWeatherImage = R.drawable.rainyday
-            val secondWeatherImage = R.drawable.cloudsnow
-
-            if (temp.value == null) {
+            if (temp1.value == null || temp2.value == null) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Center) {
                     CircularProgressIndicator()
                 }
             } else {
-                temp.value?.let { FirstCardView(it, firstWeatherImage, secondWeatherImage) }
+                FirstCardView(temp1 = temp1.value!!, temp2 = temp2.value!!)
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        getCurrentData()
+        getCurrentData{
+            temp1.value = it
+        }
+        getCurrentData {
+            temp2.value = it
+        }
     }
 
-    private fun getCurrentData() {
+    private fun getCurrentData(onSuccessCall: (TemperatureResponse) -> Unit) {
         val context = this.applicationContext
         val api = Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -106,7 +109,7 @@ class MainActivity : ComponentActivity() {
             }
 
             override fun onResponse(call: Call<TemperatureResponse>, response: Response<TemperatureResponse>) {
-                temp.value = response.body()
+                response.body()?.let { onSuccessCall(it) }
             }
         })
     }
@@ -116,8 +119,6 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    val firstWeatherImage = R.drawable.rainyday
-    val secondWeatherImage = R.drawable.cloudsnow
     val temperature = TemperatureResponse(
         elevation = 3.0,
         generationtime_ms = 3.0,
@@ -131,12 +132,12 @@ fun DefaultPreview() {
     )
 
     WoupleTheme {
-        FirstCardView(temperature, firstWeatherImage, secondWeatherImage)
+        FirstCardView(temperature, temperature)
     }
 }
 
 @Composable
-fun FirstCardView(temperature: TemperatureResponse, firstWeatherImage: Int, secondWeatherImage: Int) {
+fun FirstCardView(temp1: TemperatureResponse, temp2: TemperatureResponse) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -148,16 +149,16 @@ fun FirstCardView(temperature: TemperatureResponse, firstWeatherImage: Int, seco
     ) {
         //Two Blue cards on one page
         Box(Modifier.weight(1f)) {
-            BlueCardView(firstWeatherImage)
+            BlueCardView(temp1)
         }
         Box(Modifier.weight(1f)) {
-            BlueCardView(secondWeatherImage)
+            BlueCardView(temp2)
         }
     }
 }
 
 @Composable
-fun BlueCardView(weatherImage: Int) {
+fun BlueCardView(temp: TemperatureResponse) {
     //Blue Card
     Column(
         Modifier
@@ -178,7 +179,7 @@ fun BlueCardView(weatherImage: Int) {
         }
         Row(Modifier.weight(1f)) {
             Box(Modifier.weight(1f)) { WindView() }
-            Box(Modifier.weight(1f)) { ImageWeatherView(weatherImage) }
+            Box(Modifier.weight(1f)) { ImageWeatherView(R.drawable.rainyday) }
         }
     }
 }
