@@ -82,22 +82,13 @@ class MainActivity : ComponentActivity() {
             .build()
             .create(ApiRequest::class.java)
 
-        api.getTemperature().enqueue(object : Callback<TemperatureResponse> {
-            override fun onResponse(
-                call: Call<TemperatureResponse?>,
-                response: Response<TemperatureResponse?>
-            ) {
-                val responseBody = response.body()
-
-                val myStringBuilder = StringBuilder()
-                for (myData in responseBody.timezone){
-                    myStringBuilder.append(myData)
+        api.getTemperature().enqueue(object : Callback<List<TemperatureResponse>> {
+            override fun onFailure(call: Call<List<TemperatureResponse>>, t: Throwable) {
 
             }
-            }
 
-            override fun onFailure(call: Call<TemperatureResponse?>, t: Throwable) {
-
+            override fun onResponse(call: Call<List<TemperatureResponse>>, response: Response<List<TemperatureResponse>>) {
+              
             }
         })
     }
