@@ -43,6 +43,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wouple.model.api.ApiRequest
+import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Bubbles
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark10
@@ -50,6 +52,14 @@ import com.example.wouple.ui.theme.Dark20
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Tangerine
 import com.example.wouple.ui.theme.WoupleTheme
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.lang.StringBuilder
+
+const val BASE_URL = "https://api.open-meteo.com"
 
 class MainActivity : ComponentActivity() {
 
@@ -61,7 +71,35 @@ class MainActivity : ComponentActivity() {
             val secondWeatherImage = R.drawable.cloudsnow
 
             FirstCardView(firstWeatherImage, secondWeatherImage)
+            getCurrentData()
         }
+    }
+
+    private fun getCurrentData() {
+        val api = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiRequest::class.java)
+
+        api.getTemperature().enqueue(object : Callback<TemperatureResponse> {
+            override fun onResponse(
+                call: Call<TemperatureResponse?>,
+                response: Response<TemperatureResponse?>
+            ) {
+                val responseBody = response.body()
+
+                val myStringBuilder = StringBuilder()
+                for (myData in responseBody.timezone){
+                    myStringBuilder.append(myData)
+
+            }
+            }
+
+            override fun onFailure(call: Call<TemperatureResponse?>, t: Throwable) {
+
+            }
+        })
     }
 }
 
@@ -129,7 +167,7 @@ fun BlueCardView(weatherImage: Int) {
 fun SetLocationTextField() {
     var text by remember { mutableStateOf(("")) }
     val focusManager = LocalFocusManager.current
-
+    
     TextField(
         value = text.uppercase(),
         shape = RoundedCornerShape(20.dp),

@@ -1,4 +1,4 @@
-package com.example.wouple.model
+package com.example.wouple.model.api
 
 data class HourlyUnits(
     val temperature_2m: String,
