@@ -90,9 +90,9 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
 
-        getCurrentData {
+        getCurrentData(onSuccessCall = {
             temp.value = it
-        }
+        })
     }
 
     private fun getCurrentData(onSuccessCall: (TemperatureResponse) -> Unit) {
