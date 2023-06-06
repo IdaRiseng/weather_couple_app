@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.ApiRequest
 import com.example.wouple.model.api.Hourly
 import com.example.wouple.model.api.HourlyUnits
@@ -87,7 +88,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        getCurrentData{
+        getCurrentData {
             temp1.value = it
         }
         getCurrentData {
