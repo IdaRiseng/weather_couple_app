@@ -4,8 +4,8 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Hourly(
-    val showers: List<Double>,
-    val temperature_80m: List<Double>,
-    val time: List<String>
+data class DailyUnits(
+    val precipitation_probability_max: String,
+    val time: String,
+    val uv_index_max: String
 ): Parcelable

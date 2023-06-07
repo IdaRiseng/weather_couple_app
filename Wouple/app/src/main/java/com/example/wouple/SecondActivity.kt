@@ -19,39 +19,38 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wouple.formatter.DateFormatter
+import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.*
 
 class SecondActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SecondCardView()
+            val temp = intent.getParcelableExtra<TemperatureResponse>("temp")
+            temp?.let { SecondCardView(it) }
         }
     }
 }
 
-@Preview(showBackground = true)
+/*@Preview(showBackground = true)
 @Composable
 fun DefaultPreview2() {
     WoupleTheme {
-        SecondCardView()
+        SecondCardView(temp = )
     }
-}
+}*/
 
 @Composable
-fun SecondCardView() {
+fun SecondCardView(temp: TemperatureResponse) {
     val scrollStateOne = rememberScrollState()
     Column(
         modifier = Modifier
@@ -65,7 +64,7 @@ fun SecondCardView() {
         horizontalAlignment = CenterHorizontally
     ) {
         Locationview()
-        HourlyForecastView()
+        HourlyForecastView(temp)
         WeeklyForeCastView()
         RainFallView()
         HumidityView()
@@ -102,7 +101,8 @@ fun Locationview() {
 }
 
 @Composable
-fun HourlyForecastView() {
+fun HourlyForecastView(temp: TemperatureResponse) {
+
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
@@ -142,15 +142,17 @@ fun HourlyForecastView() {
                 .padding(start = 8.dp, end = 8.dp, bottom = 8.dp, top = 0.dp)
                 .horizontalScroll(scrollState),
         ) {
-            for (hours in 1..24) {
-                Hours()
+            for (hours in 0..23) {
+                val time = DateFormatter.formatDate(temp.hourly?.time?.get(hours).toString())
+                Hours(time)
             }
         }
     }
 }
 
 @Composable
-fun Hours() {
+fun Hours(time: String) {
+
     Column(
         modifier = Modifier
             .padding(4.dp),
@@ -158,7 +160,7 @@ fun Hours() {
     ) {
         Text(
             modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
-            text = "Now", color = Whitehis
+            text = time.toString(), color = Whitehis
         )
         Image(
             painter = painterResource(id = R.drawable.rainyday),

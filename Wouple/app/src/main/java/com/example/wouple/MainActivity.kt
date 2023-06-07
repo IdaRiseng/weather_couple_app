@@ -64,6 +64,10 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.sql.Time
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 const val BASE_URL = "https://api.open-meteo.com"
 
@@ -81,7 +85,7 @@ class MainActivity : ComponentActivity() {
                     CircularProgressIndicator()
                 }
             } else {
-                FirstCardView(temp1 = temp1.value!!, temp2 = temp2.value!!)
+                FirstCardView(temp1 = temp1.value!!, temp2 = temp2.value!!, onSearch = {getCurrentData { temp1.value = it }})
             }
         }
     }
@@ -117,7 +121,7 @@ class MainActivity : ComponentActivity() {
 }
 
 
-@Preview(showBackground = true)
+/*@Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     val temperature = TemperatureResponse(
@@ -135,10 +139,10 @@ fun DefaultPreview() {
     WoupleTheme {
         FirstCardView(temperature, temperature)
     }
-}
+}*/
 
 @Composable
-fun FirstCardView(temp1: TemperatureResponse, temp2: TemperatureResponse) {
+fun FirstCardView(temp1: TemperatureResponse, temp2: TemperatureResponse, onSearch: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -150,16 +154,16 @@ fun FirstCardView(temp1: TemperatureResponse, temp2: TemperatureResponse) {
     ) {
         //Two Blue cards on one page
         Box(Modifier.weight(1f)) {
-            BlueCardView(temp1)
+            BlueCardView(temp1, onSearch)
         }
         Box(Modifier.weight(1f)) {
-            BlueCardView(temp2)
+            BlueCardView(temp2, onSearch)
         }
     }
 }
 
 @Composable
-fun BlueCardView(temp: TemperatureResponse) {
+fun BlueCardView(temp: TemperatureResponse, onSearch: (String) -> Unit) {
     //Blue Card
     Column(
         Modifier
@@ -170,13 +174,13 @@ fun BlueCardView(temp: TemperatureResponse) {
         horizontalAlignment = CenterHorizontally
     ) {
         //This is the top "set location view
-        SetLocationTextField()
+        SetLocationTextField(onSearch)
 
         //Row goes that way -->>
         //Weight makes the boxes equal sizes no matter what phone they have
         Row(Modifier.weight(1f)) {
-            Box(Modifier.weight(1f)) { TimeView() }
-            Box(Modifier.weight(1f)) { TemperatureView() }
+            Box(Modifier.weight(1f)) { TimeView(temp) }
+            Box(Modifier.weight(1f)) { TemperatureView(temp) }
         }
         Row(Modifier.weight(1f)) {
             Box(Modifier.weight(1f)) { WindView() }
@@ -186,7 +190,7 @@ fun BlueCardView(temp: TemperatureResponse) {
 }
 
 @Composable
-fun SetLocationTextField() {
+fun SetLocationTextField(onSearch: (String) -> Unit) {
     var text by remember { mutableStateOf(("")) }
     val focusManager = LocalFocusManager.current
 
@@ -207,6 +211,7 @@ fun SetLocationTextField() {
         ),
         onValueChange = { newText ->
             text = newText
+            onSearch(text)
         },
         placeholder = {
             Text(
@@ -219,9 +224,9 @@ fun SetLocationTextField() {
         modifier = Modifier.padding(bottom = 8.dp)
     )
 }
-
 @Composable
-fun TimeView() {
+fun TimeView(temp: TemperatureResponse) {
+    val xxx = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -240,7 +245,7 @@ fun TimeView() {
         Text(
             modifier = Modifier,
             fontSize = 45.sp,
-            text = "03:00",
+            text = xxx.toString(),
             color = Bubbles.copy(alpha = 1f),
         )
         Icon(
@@ -254,12 +259,17 @@ fun TimeView() {
     }
 }
 
+
 @Composable
-fun TemperatureView() {
+fun TemperatureView(temp: TemperatureResponse) {
     val activity = LocalContext.current
+    val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
+    val some = index?.let { temp.hourly?.temperature_80m?.get(it)?.toInt() }
+
     Column(modifier = Modifier
         .clickable {
             val intent = Intent(activity, SecondActivity::class.java)
+            intent.putExtra("temp", temp)
             activity.startActivity(intent)
         }
         .padding(4.dp)
@@ -278,7 +288,7 @@ fun TemperatureView() {
         Row {
             Text(
                 fontSize = 50.sp,
-                text = "-5°",
+                text = some.toString(),
                 color = Bubbles.copy(alpha = 1f),
             )
             Icon(
