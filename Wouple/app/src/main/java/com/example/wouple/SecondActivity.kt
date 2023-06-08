@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.*
+import java.time.LocalDateTime
 
 class SecondActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +67,7 @@ fun SecondCardView(temp: TemperatureResponse) {
         Locationview()
         HourlyForecastView(temp)
         WeeklyForeCastView()
-        RainFallView()
+        RainFallView(temp)
         HumidityView()
     }
 
@@ -263,7 +264,8 @@ fun WeeklyForeCastView() {
 }
 
 @Composable
-fun RainFallView() {
+fun RainFallView(temp: TemperatureResponse) {
+
     Row(modifier = Modifier.padding(top = 8.dp)) {
         Box(modifier = Modifier.weight(1f)) {
             Column(
@@ -332,7 +334,7 @@ fun RainFallView() {
                 }
                 Text(
                     modifier = Modifier,
-                    text = "O mm",
+                    text = temp.daily?.precipitation_probability_max.toString(),
                     color = Corn,
                     fontSize = 32.sp
                 )
