@@ -5,7 +5,12 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Hourly(
-    val showers: List<Double>,
-    val temperature_80m: List<Double>,
-    val time: List<String>
+    val apparent_temperature: List<Double>,
+    val dewpoint_2m: List<Double>,
+    val precipitation: List<Double>,
+    val relativehumidity_2m: List<Int>,
+    val temperature_2m: List<Double>,
+    val time: List<String>,
+    val visibility: List<Double>,
+    val windspeed_10m: List<Double>
 ): Parcelable

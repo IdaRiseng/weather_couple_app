@@ -66,9 +66,9 @@ fun SecondCardView(temp: TemperatureResponse) {
     ) {
         Locationview()
         HourlyForecastView(temp)
-        WeeklyForeCastView()
+        WeeklyForeCastView(temp)
         RainFallView(temp)
-        HumidityView()
+        HumidityView(temp)
     }
 
 }
@@ -177,7 +177,7 @@ fun Hours(time: String) {
 }
 
 @Composable
-fun WeeklyForeCastView() {
+fun WeeklyForeCastView(temp: TemperatureResponse) {
     Column(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp)
@@ -266,6 +266,9 @@ fun WeeklyForeCastView() {
 @Composable
 fun RainFallView(temp: TemperatureResponse) {
 
+    val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
+    val feelsLike = index?.let { temp.hourly?.temperature_2m?.get(it)?.toInt() }
+
     Row(modifier = Modifier.padding(top = 8.dp)) {
         Box(modifier = Modifier.weight(1f)) {
             Column(
@@ -299,7 +302,7 @@ fun RainFallView(temp: TemperatureResponse) {
                 }
                 Text(
                     modifier = Modifier,
-                    text = "-9°",
+                    text = feelsLike.toString() + "°",
                     color = Corn,
                     fontSize = 32.sp,
 
@@ -307,6 +310,8 @@ fun RainFallView(temp: TemperatureResponse) {
             }
         }
         Box(modifier = Modifier.weight(1f)) {
+            val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
+            val rainFall = index?.let { temp.hourly?.precipitation?.get(it)?.toInt() }
             Column(
                 modifier = Modifier
                     .padding(start = 8.dp, end = 16.dp)
@@ -334,7 +339,7 @@ fun RainFallView(temp: TemperatureResponse) {
                 }
                 Text(
                     modifier = Modifier,
-                    text = temp.daily?.precipitation_probability_max.toString(),
+                    text = rainFall.toString() + " mm",
                     color = Corn,
                     fontSize = 32.sp
                 )
@@ -351,7 +356,11 @@ fun RainFallView(temp: TemperatureResponse) {
 }
 
 @Composable
-fun HumidityView() {
+fun HumidityView(temp: TemperatureResponse) {
+
+    val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
+    val humidity = index?.let { temp.hourly?.relativehumidity_2m?.get(it)?.toInt() }
+
     Row(modifier = Modifier.padding(top = 8.dp)) {
         Box(modifier = Modifier.weight(1f)) {
             Column(
@@ -385,14 +394,29 @@ fun HumidityView() {
                 }
                 Text(
                     modifier = Modifier,
-                    text = "%64",
+                    text = "%" + humidity.toString(),
                     color = Corn,
                     fontSize = 32.sp,
 
                     )
+                val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
+                val dewPoint = index?.let { temp.hourly?.dewpoint_2m?.get(it)?.toInt() }
+
+                Text(
+                    modifier = Modifier,
+                    text = "DewPoint is " + dewPoint.toString() + "°",
+                    color = Corn,
+                    fontSize = 14.sp,
+
+                    )
             }
         }
+
         Box(modifier = Modifier.weight(1f)) {
+            val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
+            val visibilityInMeters = index?.let { temp.hourly?.visibility?.get(it)?.toInt()}
+            val visibilityInKilometers = visibilityInMeters?.times(0.001)?.toString()
+
             Column(
                 modifier = Modifier
                     .padding(start = 8.dp, end = 16.dp)
@@ -418,12 +442,14 @@ fun HumidityView() {
                         color = Corn
                     )
                 }
-                Text(
-                    modifier = Modifier,
-                    text = "11 km",
-                    color = Corn,
-                    fontSize = 32.sp
-                )
+                visibilityInKilometers?.let {
+                    Text(
+                        modifier = Modifier,
+                        text = it + " km",
+                        color = Corn,
+                        fontSize = 28.sp
+                    )
+                }
 
                 Text(
                     modifier = Modifier,

@@ -44,13 +44,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.ApiRequest
-import com.example.wouple.model.api.Hourly
-import com.example.wouple.model.api.HourlyUnits
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Bubbles
 import com.example.wouple.ui.theme.Corn
@@ -58,14 +54,11 @@ import com.example.wouple.ui.theme.Dark10
 import com.example.wouple.ui.theme.Dark20
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Tangerine
-import com.example.wouple.ui.theme.WoupleTheme
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.sql.Time
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -183,7 +176,7 @@ fun BlueCardView(temp: TemperatureResponse, onSearch: (String) -> Unit) {
             Box(Modifier.weight(1f)) { TemperatureView(temp) }
         }
         Row(Modifier.weight(1f)) {
-            Box(Modifier.weight(1f)) { WindView() }
+            Box(Modifier.weight(1f)) { WindView(temp) }
             Box(Modifier.weight(1f)) { ImageWeatherView(R.drawable.rainyday) }
         }
     }
@@ -264,7 +257,7 @@ fun TimeView(temp: TemperatureResponse) {
 fun TemperatureView(temp: TemperatureResponse) {
     val activity = LocalContext.current
     val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
-    val some = index?.let { temp.hourly?.temperature_80m?.get(it)?.toInt() }
+    val some = index?.let { temp.hourly?.temperature_2m?.get(it)?.toInt() }
 
     Column(modifier = Modifier
         .clickable {
@@ -290,28 +283,31 @@ fun TemperatureView(temp: TemperatureResponse) {
                 fontSize = 50.sp,
                 text = some.toString(),
                 color = Bubbles.copy(alpha = 1f),
+                modifier = Modifier.padding(start = 15.dp)
             )
-            Icon(
-                painter = painterResource(id = R.drawable.heat), contentDescription = "",
-                modifier = Modifier
-                    .alpha(0.9f)
-                    .padding(top = 12.dp)
-                    .size(50.dp),
-                tint = Tangerine
+            Text(
+                fontSize = 32.sp,
+                text = "°",
+                color = Bubbles.copy(alpha = 1f),
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
-        Text(
-            modifier = Modifier.padding(bottom = 10.dp),
-            text = "Snowy",
-            color = Corn,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Light
+        Icon(
+            painter = painterResource(id = R.drawable.thermo), contentDescription = "",
+            modifier = Modifier
+                .alpha(0.9f)
+                .padding(bottom = 4.dp)
+                .size(50.dp),
+            tint = Tangerine
         )
     }
 }
 
 @Composable
-fun WindView() {
+fun WindView(temp: TemperatureResponse) {
+    val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
+    val windSpeed = index?.let { temp.hourly?.windspeed_10m?.get(it)?.toInt() }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -331,7 +327,7 @@ fun WindView() {
         Text(
             modifier = Modifier,
             fontSize = 30.sp,
-            text = "16km/h",
+            text = windSpeed.toString() + " Km/h",
             color = Bubbles.copy(alpha = 1f)
         )
         Icon(
