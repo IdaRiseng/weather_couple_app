@@ -58,13 +58,13 @@ fun SecondCardView(temp: TemperatureResponse) {
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
             .paint(
-                painter = painterResource(id = R.drawable.rainybackground),
+                painter = painterResource(id = R.drawable.sky),
                 contentScale = ContentScale.Crop
             )
             .verticalScroll(scrollStateOne),
         horizontalAlignment = CenterHorizontally
     ) {
-        Locationview()
+        Locationview(temp)
         HourlyForecastView(temp)
         WeeklyForeCastView(temp)
         RainFallView(temp)
@@ -74,27 +74,29 @@ fun SecondCardView(temp: TemperatureResponse) {
 }
 
 @Composable
-fun Locationview() {
+fun Locationview(temp: TemperatureResponse) {
+    val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
+    val realTemperature = index?.let { temp.hourly?.temperature_2m?.get(it)?.toInt() }
     Column(
         modifier = Modifier
-            .padding(top = 10.dp)
+            .padding(top = 40.dp, bottom = 20.dp)
             .fillMaxWidth(1f),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "OSLO",
-            fontSize = 24.sp,
+            fontSize = 50.sp,
             color = Color.Black,
+            fontWeight = FontWeight.Normal
+        )
+        Text(
+            text = realTemperature.toString() + "°",
+            color = Color.Black,
+            fontSize = 64.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "-5°",
-            color = Color.Black,
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = "Snowy",
+            text = "Mainly Clear",
             color = Color.Black,
             fontSize = 24.sp,
         )
@@ -119,7 +121,7 @@ fun HourlyForecastView(temp: TemperatureResponse) {
             Icon(
                 painter = painterResource(id = R.drawable.clock),
                 contentDescription = "",
-                tint = Corn.copy(alpha = 0.6f),
+                tint = Corn.copy(alpha = 0.7f),
                 modifier = Modifier
                     .size(20.dp)
             )
@@ -128,7 +130,7 @@ fun HourlyForecastView(temp: TemperatureResponse) {
                     .align(CenterVertically)
                     .padding(start = 4.dp),
                 text = "HOURLY FORECAST",
-                color = Bubbles.copy(alpha = 0.8f)
+                color = Whitehis.copy(alpha = 0.9f)
             )
         }
         Divider(
@@ -201,7 +203,7 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
             Icon(
                 painter = painterResource(id = R.drawable.calendar),
                 contentDescription = "",
-                tint = Corn.copy(alpha = 0.8f),
+                tint = Whitehis.copy(alpha = 0.9f),
                 modifier = Modifier
                     .size(20.dp)
             )
@@ -211,7 +213,7 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
                     .align(CenterVertically)
                     .padding(start = 4.dp),
                 text = "WEEKLY FORECAST",
-                color = Bubbles.copy(alpha = 0.8f)
+                color = Whitehis.copy(alpha = 0.9f)
             )
 
 
@@ -253,7 +255,7 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
 
                 }
                 Divider(
-                    color = Tangerine.copy(alpha = 0.8f),
+                    color = Spiro.copy(alpha = 0.5f),
                     thickness = 1.dp,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 )
@@ -267,7 +269,7 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
 fun RainFallView(temp: TemperatureResponse) {
 
     val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
-    val feelsLike = index?.let { temp.hourly?.temperature_2m?.get(it)?.toInt() }
+    val feelsLike = index?.let { temp.hourly?.apparent_temperature?.get(it)?.toInt() }
 
     Row(modifier = Modifier.padding(top = 8.dp)) {
         Box(modifier = Modifier.weight(1f)) {
@@ -415,7 +417,7 @@ fun HumidityView(temp: TemperatureResponse) {
         Box(modifier = Modifier.weight(1f)) {
             val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
             val visibilityInMeters = index?.let { temp.hourly?.visibility?.get(it)?.toInt()}
-            val visibilityInKilometers = visibilityInMeters?.times(0.001)?.toString()
+            val visibilityInKilometers = visibilityInMeters?.times(0.001)?.toInt()
 
             Column(
                 modifier = Modifier
@@ -445,7 +447,7 @@ fun HumidityView(temp: TemperatureResponse) {
                 visibilityInKilometers?.let {
                     Text(
                         modifier = Modifier,
-                        text = it + " km",
+                        text = it.toString() + " km",
                         color = Corn,
                         fontSize = 28.sp
                     )

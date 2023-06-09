@@ -140,7 +140,7 @@ fun FirstCardView(temp1: TemperatureResponse, temp2: TemperatureResponse, onSear
         modifier = Modifier
             .fillMaxSize()
             .paint(
-                painter = painterResource(id = R.drawable.backgroundthree),
+                painter = painterResource(id = R.drawable.sky),
                 contentScale = ContentScale.Crop
             ),
         horizontalAlignment = CenterHorizontally
@@ -231,7 +231,7 @@ fun TimeView(temp: TemperatureResponse) {
             modifier = Modifier
                 .padding(top = 20.dp),
             text = "TIME",
-            color = Corn,
+            color = Corn.copy(alpha = 0.8f),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
@@ -274,7 +274,7 @@ fun TemperatureView(temp: TemperatureResponse) {
             modifier = Modifier
                 .padding(top = 20.dp),
             text = "TEMPERATURE",
-            color = Corn,
+            color = Corn.copy(alpha = 0.8f),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
@@ -320,7 +320,7 @@ fun WindView(temp: TemperatureResponse) {
             modifier = Modifier
                 .padding(top = 10.dp),
             text = "WIND",
-            color = Corn,
+            color = Corn.copy(alpha = 0.8f),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
