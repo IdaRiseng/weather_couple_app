@@ -12,5 +12,6 @@ data class HourlyUnits(
     val temperature_2m: String,
     val time: String,
     val visibility: String,
+    val weathercode: String,
     val windspeed_10m: String
 ): Parcelable

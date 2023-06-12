@@ -167,7 +167,7 @@ fun BlueCardView(temp: TemperatureResponse, onSearch: (String) -> Unit) {
         horizontalAlignment = CenterHorizontally
     ) {
         //This is the top "set location view
-        SetLocationTextField(onSearch)
+        SetLocationTextField(onSearch, temp)
 
         //Row goes that way -->>
         //Weight makes the boxes equal sizes no matter what phone they have
@@ -183,9 +183,12 @@ fun BlueCardView(temp: TemperatureResponse, onSearch: (String) -> Unit) {
 }
 
 @Composable
-fun SetLocationTextField(onSearch: (String) -> Unit) {
+fun SetLocationTextField(onSearch: (String) -> Unit, temp: TemperatureResponse) {
     var text by remember { mutableStateOf(("")) }
     val focusManager = LocalFocusManager.current
+    val latitude = temp.latitude
+    val longitude = temp.longitude
+
 
     TextField(
         value = text.uppercase(),
@@ -205,6 +208,8 @@ fun SetLocationTextField(onSearch: (String) -> Unit) {
         onValueChange = { newText ->
             text = newText
             onSearch(text)
+            val locationQuery = "$text ($latitude, $longitude)"
+            onSearch(locationQuery)
         },
         placeholder = {
             Text(
@@ -231,7 +236,7 @@ fun TimeView(temp: TemperatureResponse) {
             modifier = Modifier
                 .padding(top = 20.dp),
             text = "TIME",
-            color = Corn.copy(alpha = 0.8f),
+            color = Corn.copy(alpha = 0.9f),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
@@ -274,14 +279,14 @@ fun TemperatureView(temp: TemperatureResponse) {
             modifier = Modifier
                 .padding(top = 20.dp),
             text = "TEMPERATURE",
-            color = Corn.copy(alpha = 0.8f),
+            color = Corn.copy(alpha = 0.9f),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
         Row {
             Text(
                 fontSize = 50.sp,
-                text = some.toString(),
+                text = temp.current_weather.temperature.toInt().toString(),
                 color = Bubbles.copy(alpha = 1f),
                 modifier = Modifier.padding(start = 15.dp)
             )
@@ -320,14 +325,14 @@ fun WindView(temp: TemperatureResponse) {
             modifier = Modifier
                 .padding(top = 10.dp),
             text = "WIND",
-            color = Corn.copy(alpha = 0.8f),
+            color = Corn.copy(alpha = 0.9f),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
             modifier = Modifier,
             fontSize = 30.sp,
-            text = windSpeed.toString() + " Km/h",
+            text = temp.current_weather.windspeed.toInt().toString() + " Km/h",
             color = Bubbles.copy(alpha = 1f)
         )
         Icon(

@@ -2,14 +2,16 @@ package com.example.wouple.model.api
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.RawValue
 
 @Parcelize
 data class TemperatureResponse(
+    val current_weather: CurrentWeather,
+    val daily: Daily,
+    val daily_units: DailyUnits,
     val elevation: Double,
     val generationtime_ms: Double,
-    val hourly: @RawValue Hourly?,
-    val hourly_units: @RawValue HourlyUnits?,
+    val hourly: Hourly,
+    val hourly_units: HourlyUnits,
     val latitude: Double,
     val longitude: Double,
     val timezone: String,
