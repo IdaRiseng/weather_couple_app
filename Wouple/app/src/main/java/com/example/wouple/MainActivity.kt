@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -63,6 +64,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 const val BASE_URL = "https://api.open-meteo.com"
+const val BASE_GEO = "https://geocoding-api.open-meteo.com"
+
 
 class MainActivity : ComponentActivity() {
 
@@ -78,7 +81,10 @@ class MainActivity : ComponentActivity() {
                     CircularProgressIndicator()
                 }
             } else {
-                FirstCardView(temp1 = temp1.value!!, temp2 = temp2.value!!, onSearch = {getCurrentData { temp1.value = it }})
+                FirstCardView(
+                    temp1 = temp1.value!!,
+                    temp2 = temp2.value!!,
+                    onSearch = { getCurrentData { temp1.value = it } })
             }
         }
     }
@@ -104,14 +110,19 @@ class MainActivity : ComponentActivity() {
         api.getTemperature().enqueue(object : Callback<TemperatureResponse> {
             override fun onFailure(call: Call<TemperatureResponse>, t: Throwable) {
                 Toast.makeText(context, t.message, Toast.LENGTH_LONG).show()
+
             }
 
-            override fun onResponse(call: Call<TemperatureResponse>, response: Response<TemperatureResponse>) {
+            override fun onResponse(
+                call: Call<TemperatureResponse>,
+                response: Response<TemperatureResponse>
+            ) {
                 response.body()?.let { onSuccessCall(it) }
             }
         })
     }
 }
+
 
 
 /*@Preview(showBackground = true)
@@ -135,12 +146,20 @@ fun DefaultPreview() {
 }*/
 
 @Composable
-fun FirstCardView(temp1: TemperatureResponse, temp2: TemperatureResponse, onSearch: (String) -> Unit) {
+fun FirstCardView(
+    temp1: TemperatureResponse,
+    temp2: TemperatureResponse,
+    onSearch: (String) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .paint(
-                painter = painterResource(id = R.drawable.sky),
+                when (temp1.current_weather.is_day) {
+                    1 -> painterResource(id = R.drawable.sky)
+                    0 -> painterResource(id = R.drawable.drizzle)
+                    else -> return
+                },
                 contentScale = ContentScale.Crop
             ),
         horizontalAlignment = CenterHorizontally
@@ -186,8 +205,6 @@ fun BlueCardView(temp: TemperatureResponse, onSearch: (String) -> Unit) {
 fun SetLocationTextField(onSearch: (String) -> Unit, temp: TemperatureResponse) {
     var text by remember { mutableStateOf(("")) }
     val focusManager = LocalFocusManager.current
-    val latitude = temp.latitude
-    val longitude = temp.longitude
 
 
     TextField(
@@ -208,8 +225,6 @@ fun SetLocationTextField(onSearch: (String) -> Unit, temp: TemperatureResponse) 
         onValueChange = { newText ->
             text = newText
             onSearch(text)
-            val locationQuery = "$text ($latitude, $longitude)"
-            onSearch(locationQuery)
         },
         placeholder = {
             Text(
@@ -222,6 +237,7 @@ fun SetLocationTextField(onSearch: (String) -> Unit, temp: TemperatureResponse) 
         modifier = Modifier.padding(bottom = 8.dp)
     )
 }
+
 @Composable
 fun TimeView(temp: TemperatureResponse) {
     val xxx = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
@@ -261,7 +277,8 @@ fun TimeView(temp: TemperatureResponse) {
 @Composable
 fun TemperatureView(temp: TemperatureResponse) {
     val activity = LocalContext.current
-    val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
+    val index =
+        temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
     val some = index?.let { temp.hourly?.temperature_2m?.get(it)?.toInt() }
 
     Column(modifier = Modifier
@@ -310,9 +327,6 @@ fun TemperatureView(temp: TemperatureResponse) {
 
 @Composable
 fun WindView(temp: TemperatureResponse) {
-    val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
-    val windSpeed = index?.let { temp.hourly?.windspeed_10m?.get(it)?.toInt() }
-
     Column(
         modifier = Modifier
             .fillMaxSize()

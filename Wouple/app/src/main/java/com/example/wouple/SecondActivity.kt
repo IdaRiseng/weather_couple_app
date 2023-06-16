@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -24,13 +25,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.substring
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.*
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.Locale
 
 class SecondActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,7 +101,7 @@ fun Locationview(temp: TemperatureResponse) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "TOKYO",
+            text = "OTTAWA",
             fontSize = 50.sp,
             color = Color.Black,
             fontWeight = FontWeight.Normal
@@ -311,17 +316,17 @@ fun HourlyForecastView(temp: TemperatureResponse) {
                 .padding(start = 8.dp, end = 8.dp, bottom = 8.dp, top = 0.dp)
                 .horizontalScroll(scrollState),
         ) {
-            for (hours in 0..23) {
-                val time = DateFormatter.formatDate(temp.hourly?.time?.get(hours).toString())
-                Hours(time)
+            for (index in 0..23) {
+                val time = DateFormatter.formatDate(temp.hourly?.time?.get(index).toString())
+                val temperature = temp.hourly.temperature_2m.get(index).toInt().toString()
+                Hours(time, temperature)
             }
         }
     }
 }
 
 @Composable
-fun Hours(time: String) {
-
+fun Hours(time: String, temperature: String) {
     Column(
         modifier = Modifier
             .padding(4.dp),
@@ -329,7 +334,8 @@ fun Hours(time: String) {
     ) {
         Text(
             modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
-            text = time.toString(), color = Whitehis
+            text = time,
+            color = Whitehis
         )
         Image(
             painter = painterResource(id = R.drawable.rainyday),
@@ -338,7 +344,8 @@ fun Hours(time: String) {
         )
         Text(
             modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
-            text = "-5°", color = Whitehis,
+            text = temperature,
+            color = Whitehis,
             fontSize = 18.sp
         )
     }
@@ -354,15 +361,10 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
             .background(Dark20)
             .padding(16.dp)
     ) {
-        var text by remember { mutableStateOf(("")) }
-        val focusManager = LocalFocusManager.current
-        val activity = LocalContext.current
-        val intent = Intent(activity, MainActivity::class.java)
-        val data = intent.getStringExtra("location")
         Row(
+            modifier = Modifier.padding(top = 8.dp, start = 18.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(top = 8.dp, start = 18.dp, bottom = 8.dp)
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
 
@@ -389,33 +391,36 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
             thickness = 1.dp,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        for (days in 1..7) {
+        for (days in 0..6) {
+            val daysOfWeek = temp.daily.time?.get(days).toString()
+            val somessd = LocalDate.parse(daysOfWeek).dayOfWeek.toString().substring(0..2)
+            val forecast = temp.hourly.temperature_2m.get(days).toInt()
             Column() {
-
-
                 Row(
-                    verticalAlignment = CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
                         modifier = Modifier.padding(top = 8.dp),
-                        text = "Monday",
-                        fontSize = 16.sp,
+                        text = somessd.toString().lowercase().capitalize(locale = Locale.ENGLISH),
+                        fontSize = 18.sp,
                         color = Color.LightGray
                     )
+
                     Image(
                         painter = painterResource(id = R.drawable.cloudsnow),
                         contentDescription = null,
                         modifier = Modifier.size(32.dp)
                     )
+
                     Text(
                         modifier = Modifier,
-                        text = "-5°",
-                        color = Color.LightGray,
-                        fontSize = 20.sp
+                        text = forecast.toString(),
+                        color = Whitehis,
+                        fontSize = 18.sp
                     )
 
 
@@ -433,7 +438,6 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
 
 @Composable
 fun RainFallView(temp: TemperatureResponse) {
-
     val index =
         temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
     val feelsLike = index?.let { temp.hourly?.apparent_temperature?.get(it)?.toInt() }
@@ -481,7 +485,7 @@ fun RainFallView(temp: TemperatureResponse) {
         Box(modifier = Modifier.weight(1f)) {
             val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }
                 ?.indexOf(LocalDateTime.now().hour)
-            val rainFall = index?.let { temp.hourly?.precipitation?.get(it)?.toInt() }
+            val rainFall = index?.let { temp.hourly?.precipitation_probability?.get(it)?.toInt() }
             Column(
                 modifier = Modifier
                     .padding(start = 8.dp, end = 16.dp)
