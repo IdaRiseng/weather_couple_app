@@ -37,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -64,9 +63,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 const val BASE_URL = "https://api.open-meteo.com"
-const val BASE_GEO = "https://geocoding-api.open-meteo.com"
-
-
 class MainActivity : ComponentActivity() {
 
 
@@ -157,7 +153,7 @@ fun FirstCardView(
             .paint(
                 when (temp1.current_weather.is_day) {
                     1 -> painterResource(id = R.drawable.sky)
-                    0 -> painterResource(id = R.drawable.drizzle)
+                    0 -> painterResource(id = R.drawable.nightone)
                     else -> return
                 },
                 contentScale = ContentScale.Crop
@@ -186,12 +182,11 @@ fun BlueCardView(temp: TemperatureResponse, onSearch: (String) -> Unit) {
         horizontalAlignment = CenterHorizontally
     ) {
         //This is the top "set location view
-        SetLocationTextField(onSearch, temp)
-
+        SetLocationTextField(onSearch)
         //Row goes that way -->>
         //Weight makes the boxes equal sizes no matter what phone they have
         Row(Modifier.weight(1f)) {
-            Box(Modifier.weight(1f)) { TimeView(temp) }
+            Box(Modifier.weight(1f)) { TimeView() }
             Box(Modifier.weight(1f)) { TemperatureView(temp) }
         }
         Row(Modifier.weight(1f)) {
@@ -202,7 +197,7 @@ fun BlueCardView(temp: TemperatureResponse, onSearch: (String) -> Unit) {
 }
 
 @Composable
-fun SetLocationTextField(onSearch: (String) -> Unit, temp: TemperatureResponse) {
+fun SetLocationTextField(onSearch: (String) -> Unit) {
     var text by remember { mutableStateOf(("")) }
     val focusManager = LocalFocusManager.current
 
@@ -239,7 +234,7 @@ fun SetLocationTextField(onSearch: (String) -> Unit, temp: TemperatureResponse) 
 }
 
 @Composable
-fun TimeView(temp: TemperatureResponse) {
+fun TimeView() {
     val xxx = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
     Column(
         modifier = Modifier
@@ -277,10 +272,6 @@ fun TimeView(temp: TemperatureResponse) {
 @Composable
 fun TemperatureView(temp: TemperatureResponse) {
     val activity = LocalContext.current
-    val index =
-        temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
-    val some = index?.let { temp.hourly?.temperature_2m?.get(it)?.toInt() }
-
     Column(modifier = Modifier
         .clickable {
             val intent = Intent(activity, SecondActivity::class.java)
@@ -309,7 +300,7 @@ fun TemperatureView(temp: TemperatureResponse) {
             )
             Text(
                 fontSize = 32.sp,
-                text = "°",
+                text = temp.hourly_units.temperature_2m,
                 color = Bubbles.copy(alpha = 1f),
                 modifier = Modifier.padding(top = 4.dp)
             )
@@ -346,7 +337,7 @@ fun WindView(temp: TemperatureResponse) {
         Text(
             modifier = Modifier,
             fontSize = 30.sp,
-            text = temp.current_weather.windspeed.toInt().toString() + " Km/h",
+            text = temp.current_weather.windspeed.toInt().toString() +" " + temp.hourly_units.windspeed_10m,
             color = Bubbles.copy(alpha = 1f)
         )
         Icon(
