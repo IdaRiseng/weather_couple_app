@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.WeatherCondition.RAINY
 import com.example.wouple.WeatherCondition.SNOWY
-import com.example.wouple.WeatherCondition.SUNNY
 import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.*
@@ -47,14 +45,6 @@ class SecondActivity : ComponentActivity() {
         }
     }
 }
-
-/*@Preview(showBackground = true)
-@Composable
-fun DefaultPreview2() {
-    WoupleTheme {
-        SecondCardView(temp = )
-    }
-}*/
 
 @Composable
 fun SecondCardView(temp: TemperatureResponse) {
@@ -91,8 +81,8 @@ fun SecondCardView(temp: TemperatureResponse) {
 
         LocationView(temp)
         Row() {
-            sunRise(temp)
-            sunSet(temp)
+            SunRise(temp)
+            SunSet(temp)
         }
         HourlyForecastView(temp)
         WeeklyForeCastView(temp)
@@ -127,7 +117,6 @@ fun SecondCardView(temp: TemperatureResponse) {
             painterResource(id = R.drawable.dew)
         )
     }
-
 }
 
 @Composable
@@ -200,7 +189,12 @@ fun HourlyForecastView(temp: TemperatureResponse) {
             .padding(16.dp),
 
         ) {
-        Row(modifier = Modifier.padding(bottom = 8.dp)) {
+        Row(modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)) {
+
+            Icon(
+                painter = painterResource(id = R.drawable.twentyfour), contentDescription = null,
+                tint = Whitehis
+            )
 
             Text(
                 modifier = Modifier
@@ -215,8 +209,6 @@ fun HourlyForecastView(temp: TemperatureResponse) {
             thickness = 1.dp,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-
-
         Row(
             modifier = Modifier
                 .padding(start = 8.dp, end = 8.dp, bottom = 8.dp, top = 0.dp)
@@ -226,24 +218,35 @@ fun HourlyForecastView(temp: TemperatureResponse) {
             for (index in currentHour..(currentHour + 23)) {
                 val time = DateFormatter.formatDate(temp.hourly.time[index])
                 val temperature = temp.hourly.temperature_2m[index].toInt().toString()
+                val isDaytime = temp.hourly.is_day.getOrNull(index) == 1
 
-                    val isNight = temp.current_weather.is_day == 0
-
+                if (isDaytime) {
                     val hourlyWeatherCondition = when (temp.hourly.weathercode[index]) {
-                        1 -> WeatherCondition.SUNNY
-                        2 -> WeatherCondition.SUNNY
-                        3 -> WeatherCondition.CLOUDY
-                        4 -> WeatherCondition.CLOUDY
+                        1, 2 -> WeatherCondition.SUNNY
+                        3, 4 -> WeatherCondition.CLOUDY
                         66 -> RAINY
                         else -> WeatherCondition.SUNNY // Set a default weather condition in case of an unknown code
                     }
                     Hours(time, temperature, hourlyWeatherCondition)
+                }
+                if (!isDaytime) {
+                    val hourlyWeatherConditionNight = when (temp.hourly.weathercode[index]) {
+                        1, 2 -> WeatherCondition.NIGHT
+                        3, 4 -> WeatherCondition.NIGHT
+                        else -> {
+                            WeatherCondition.NIGHT
+                        }
+                    }
+                    Hours(time, temperature, hourlyWeatherConditionNight)
+                }
             }
+
         }
     }
 }
+
 @Composable
-fun sunRise(temp: TemperatureResponse) {
+fun SunRise(temp: TemperatureResponse) {
     val now = LocalDateTime.now().toLocalDate()
     val todaySunrise = temp.daily.sunrise.firstOrNull {
         LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
@@ -271,7 +274,7 @@ fun sunRise(temp: TemperatureResponse) {
             fontSize = 16.sp,
             color = Spiro
         )
-       todaySunrise?.let {
+        todaySunrise?.let {
             Text(
                 modifier = Modifier.padding(start = 10.dp),
                 text = formattedSunrise,
@@ -281,14 +284,18 @@ fun sunRise(temp: TemperatureResponse) {
         }
 
         Icon(
-            painter = painterResource(id = R.drawable.sun) , contentDescription = null, modifier = Modifier.padding(start = 4.dp), tint = Tangerine )
+            painter = painterResource(id = R.drawable.sunrise),
+            contentDescription = null,
+            modifier = Modifier.padding(start = 4.dp),
+            tint = Tangerine
+        )
 
 
     }
-
 }
+
 @Composable
-fun sunSet(temp: TemperatureResponse) {
+fun SunSet(temp: TemperatureResponse) {
     val now = LocalDateTime.now().toLocalDate()
     val todaySunrise = temp.daily.sunset.firstOrNull {
         LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
@@ -322,7 +329,9 @@ fun sunSet(temp: TemperatureResponse) {
             color = Corn
         )
         Icon(
-            painter = painterResource(id = R.drawable.sun) , contentDescription = null, modifier = Modifier.padding(start = 4.dp), tint = Tangerine )
+            painter = painterResource(id = R.drawable.sunrise), contentDescription = null,
+            modifier = Modifier.padding(start = 4.dp), tint = Tangerine
+        )
 
 
     }
@@ -362,7 +371,7 @@ enum class WeatherCondition(val imageResourceId: Int) {
     RAINY(R.drawable.rainyday),
     CLOUDY(R.drawable.cloudydaylight),
     SNOWY(R.drawable.cloudsnow),
-    NIGHT(R.drawable.moonight)
+    NIGHT(R.drawable.nighttime)
     // Add more weather conditions and their associated images as needed
 }
 
@@ -370,27 +379,33 @@ enum class WeatherCondition(val imageResourceId: Int) {
 fun WeeklyForeCastView(temp: TemperatureResponse) {
     Column(
         modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp)
+            .padding(vertical = 4.dp, horizontal = 14.dp)
             .fillMaxWidth()
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
             .background(Dark20)
             .padding(16.dp)
     ) {
         Row(
-            modifier = Modifier.padding(top = 8.dp, start = 10.dp, bottom = 8.dp),
+            modifier = Modifier.padding(start = 8.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            Icon(
+                painter = painterResource(id = R.drawable.sevendays), contentDescription = null,
+                tint = Whitehis
+            )
+
 
             Text(
                 modifier = Modifier
+                    .padding(start = 8.dp)
                     .align(CenterVertically),
                 text = "WEEKLY FORECAST",
                 color = Corn
             )
             Text(
                 modifier = Modifier
-                    .padding(start = 60.dp),
+                    .padding(start = 40.dp),
                 text = "Min",
                 color = Spiro.copy(alpha = 0.9f),
                 textAlign = TextAlign.End,
@@ -412,7 +427,7 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
         )
         for (days in 0..6) {
             val daysOfWeek = temp.daily.time[days]
-            val somessd = LocalDate.parse(daysOfWeek).dayOfWeek.toString().substring(0..2)
+            val somessd = LocalDate.parse(daysOfWeek).dayOfWeek.toString()
             val forecastMin = temp.daily.temperature_2m_min[days].toInt()
             val forecastMax = temp.daily.temperature_2m_max[days].toInt()
 
@@ -478,51 +493,6 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
     }
 }
 
-/*@Composable
-fun ExtraForeCastView(temp: TemperatureResponse) {
-    val scrollState = rememberScrollState()
-    Column(
-        modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 80.dp)
-            .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
-            .background(Dark20)
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(top = 8.dp, start = 18.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-
-
-            Icon(
-                painter = painterResource(id = R.drawable.weathers),
-                contentDescription = "",
-                tint = Whitehis.copy(alpha = 0.9f),
-                modifier = Modifier
-                    .size(30.dp)
-            )
-
-            Text(
-                modifier = Modifier
-                    .align(CenterVertically)
-                    .padding(start = 4.dp),
-                text = "EXTRA FORECAST",
-                color = Whitehis.copy(alpha = 0.9f)
-            )
-
-        }
-        Divider(
-            color = Spiro.copy(alpha = 0.8f),
-            thickness = 1.dp,
-            modifier = Modifier.padding(bottom = 18.dp)
-        )
-        extraCards(temp)
-
-    }
-
-}*/
-
 @Composable
 fun ExtraCards(
     Text: String,
@@ -581,205 +551,3 @@ fun ExtraCards(
 
     }
 }
-/*@Composable
-fun RainFallView(temp: TemperatureResponse) {
-    val index =
-        temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
-    val feelsLike = index?.let { temp.hourly?.apparent_temperature?.get(it)?.toInt() }
-
-    Row(modifier = Modifier.padding(top = 8.dp)) {
-        Box(modifier = Modifier.weight(1f)) {
-            Column(
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 8.dp)
-                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
-                    .background(Dark20)
-                    .padding(16.dp)
-                    .height(90.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
-
-                    ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.temperaturea),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .padding(top = 2.dp),
-                        Tangerine.copy(alpha = 0.8f)
-
-                    )
-
-                    Text(
-                        text = "FEELS LIKE",
-                        color = Corn
-                    )
-                }
-                Text(
-                    modifier = Modifier,
-                    text = feelsLike.toString() + "°",
-                    color = Corn,
-                    fontSize = 32.sp,
-
-                    )
-            }
-        }
-        Box(modifier = Modifier.weight(1f)) {
-            val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }
-                ?.indexOf(LocalDateTime.now().hour)
-            val rainFall = index?.let { temp.hourly?.precipitation_probability?.get(it)?.toInt() }
-            Column(
-                modifier = Modifier
-                    .padding(start = 8.dp, end = 16.dp)
-                    .fillMaxWidth()
-                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
-                    .background(Dark20)
-                    .padding(16.dp)
-                    .height(90.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(modifier = Modifier.padding(top = 8.dp)) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.drop), contentDescription = null,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .padding(top = 2.dp),
-                        Tangerine.copy(alpha = 0.8f),
-                    )
-                    Text(
-                        modifier = Modifier,
-                        text = "RAINFALL",
-                        color = Corn
-                    )
-                }
-                Text(
-                    modifier = Modifier,
-                    text = rainFall.toString() + " mm",
-                    color = Corn,
-                    fontSize = 32.sp
-                )
-
-                Text(
-                    modifier = Modifier,
-                    text = "Expected Today",
-                    color = Corn
-                )
-
-            }
-        }
-    }
-}
-
-@Composable
-fun HumidityView(temp: TemperatureResponse) {
-
-    val index =
-        temp.hourly?.time?.map { LocalDateTime.parse(it).hour }?.indexOf(LocalDateTime.now().hour)
-    val humidity = index?.let { temp.hourly?.relativehumidity_2m?.get(it)?.toInt() }
-
-    Row(modifier = Modifier.padding(top = 8.dp)) {
-        Box(modifier = Modifier.weight(1f)) {
-            Column(
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 8.dp)
-                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
-                    .background(Dark20)
-                    .padding(16.dp)
-                    .height(90.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
-
-                    ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.humidity),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .padding(top = 2.dp),
-                        Tangerine.copy(alpha = 0.8f)
-
-                    )
-
-                    Text(
-                        text = "HUMIDITY",
-                        color = Corn
-                    )
-                }
-                Text(
-                    modifier = Modifier,
-                    text = "%" + humidity.toString(),
-                    color = Corn,
-                    fontSize = 32.sp,
-
-                    )
-                val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }
-                    ?.indexOf(LocalDateTime.now().hour)
-                val dewPoint = index?.let { temp.hourly?.dewpoint_2m?.get(it)?.toInt() }
-
-                Text(
-                    modifier = Modifier,
-                    text = "DewPoint is " + dewPoint.toString() + "°",
-                    color = Corn,
-                    fontSize = 14.sp,
-
-                    )
-            }
-        }
-
-        Box(modifier = Modifier.weight(1f)) {
-            val index = temp.hourly?.time?.map { LocalDateTime.parse(it).hour }
-                ?.indexOf(LocalDateTime.now().hour)
-            val visibilityInMeters = index?.let { temp.hourly?.visibility?.get(it)?.toInt() }
-            val visibilityInKilometers = visibilityInMeters?.times(0.001)?.toInt()
-
-            Column(
-                modifier = Modifier
-                    .padding(start = 8.dp, end = 16.dp)
-                    .fillMaxWidth()
-                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
-                    .background(Dark20)
-                    .padding(16.dp)
-                    .height(90.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(modifier = Modifier.padding(top = 8.dp)) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.eye), contentDescription = null,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .padding(top = 2.dp),
-                        Tangerine.copy(alpha = 0.8f),
-                    )
-                    Text(
-                        modifier = Modifier,
-                        text = "VISIBILITY",
-                        color = Corn
-                    )
-                }
-                visibilityInKilometers?.let {
-                    Text(
-                        modifier = Modifier,
-                        text = it.toString() + " km",
-                        color = Corn,
-                        fontSize = 28.sp
-                    )
-                }
-
-                Text(
-                    modifier = Modifier,
-                    text = "Expected Today",
-                    color = Corn
-                )
-
-            }
-        }
-    }
-}*/

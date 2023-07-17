@@ -1,66 +1,67 @@
 package com.example.wouple
 
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Bottom
+import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.SemanticsProperties.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.wouple.model.api.ApiRequest
 import com.example.wouple.model.api.TemperatureResponse
-import com.example.wouple.ui.theme.Bubbles
 import com.example.wouple.ui.theme.Corn
-import com.example.wouple.ui.theme.Dark10
-import com.example.wouple.ui.theme.Dark20
-import com.example.wouple.ui.theme.Spiro
-import com.example.wouple.ui.theme.Tangerine
+import com.example.wouple.ui.theme.Northern
+import com.example.wouple.ui.theme.Whitehis
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 
 const val BASE_URL = "https://api.open-meteo.com"
 class MainActivity : ComponentActivity() {
@@ -160,17 +161,88 @@ fun FirstCardView(
             ),
         horizontalAlignment = CenterHorizontally
     ) {
+      SearchBar()
         //Two Blue cards on one page
-        Box(Modifier.weight(1f)) {
+       /* Box(Modifier.weight(1f)) {
             BlueCardView(temp1, onSearch)
         }
         Box(Modifier.weight(1f)) {
             BlueCardView(temp2, onSearch)
+        }*/
+    }
+}
+@Composable
+fun SearchBotton() {
+    TextButton(
+        onClick = { /*TODO*/ },
+        shape = RectangleShape,
+        colors = ButtonDefaults.buttonColors(Color.Transparent)
+    ) {
+     Icon(painter = painterResource(id = R.drawable.baseline_add_circle_24), contentDescription ="add location",
+         Modifier.size(70.dp), tint = Northern )
+    }
+}
+@Composable
+fun SearchBar() {
+    var searchText by remember { mutableStateOf("") }
+    var isSearchExpanded by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .height(56.dp)
+            .background(
+                color = if (isSearchExpanded) Color.White else Color.Transparent,
+                shape = RoundedCornerShape(28.dp)
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        AnimatedVisibility(
+            visible = isSearchExpanded,
+            enter = slideInHorizontally(initialOffsetX = { -it }),
+            exit = slideOutHorizontally(targetOffsetX = { -it })
+        ) {
+            TextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 18.dp),
+                textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black),
+                placeholder = { Text("Search", color = Color.Gray) },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = androidx.compose.ui.text.input.ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = { /* Handle search button click */ }
+                )
+            )
+        }
+
+        IconButton(
+            onClick = {
+                isSearchExpanded = !isSearchExpanded
+                if (!isSearchExpanded) {
+                    searchText = ""
+                }
+            },
+            modifier = Modifier
+                .padding(end = 16.dp)
+                .size(48.dp)
+                .rotate(if (isSearchExpanded) 1f else 360f)
+        ) {
+            Icon(
+                imageVector = if (isSearchExpanded) Icons.Default.Clear else Icons.Default.Search,
+                contentDescription = "Search",
+                tint = if (isSearchExpanded) Color.Gray else Color.White
+            )
         }
     }
 }
 
-@Composable
+/*@Composable
 fun BlueCardView(temp: TemperatureResponse, onSearch: (String) -> Unit) {
     //Blue Card
     Column(
@@ -373,3 +445,4 @@ fun ImageWeatherView(weatherImage: Int) {
         )
     }
 }
+ */

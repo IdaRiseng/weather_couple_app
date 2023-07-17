@@ -24,6 +24,7 @@ val Spiro = Color(0xFF19C3FB)
 val Corn = Color(0xFFFFFAE0)
 val ButtonBlue = Color(0xFF1D71F2)
 val Tangerine = Color(0xFFFFCD00)
+val Northern = Color(0xFF04E2B7)
 
 
 
