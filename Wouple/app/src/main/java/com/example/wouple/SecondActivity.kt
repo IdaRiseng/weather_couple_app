@@ -3,6 +3,7 @@ package com.example.wouple
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -18,8 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -86,9 +90,7 @@ fun SecondCardView(temp: TemperatureResponse) {
         }
         HourlyForecastView(temp)
         WeeklyForeCastView(temp)
-
         Spacer(modifier = Modifier.padding(6.dp))
-
         ExtraCards(
             "Feels Like",
             feelsLike.let {
@@ -119,6 +121,50 @@ fun SecondCardView(temp: TemperatureResponse) {
     }
 }
 
+@Composable
+fun TildeScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 500.dp)
+    ) {
+        // Draw the bottom half in white color
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        )
+        {
+
+        }
+
+        // Draw the tilde sign (top half) in white color
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            val tildePath = Path()
+            val curveWidth = size.width / 8
+            val curveHeight = size.height / -12
+
+            // Start from the top-left corner of the canvas
+            tildePath.moveTo(-30f, 0f)
+
+            // First curve (bottom)
+            tildePath.cubicTo(
+                -curveWidth, curveHeight,
+                curveWidth * -1, curveHeight * 8,
+                curveWidth * 11, 12f
+            )
+
+            // Draw the tilde sign in white color
+            drawPath(
+                path = tildePath,
+                brush = SolidColor(Color.White)
+            )
+        }
+    }
+
+}
 @Composable
 fun LocationView(temp: TemperatureResponse) {
     Column(

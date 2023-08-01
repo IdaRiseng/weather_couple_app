@@ -1,14 +1,23 @@
 package com.example.wouple
 
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.Animatable
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,40 +27,79 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
+import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.swipeable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Bottom
+import androidx.compose.ui.Alignment.Companion.BottomCenter
+import androidx.compose.ui.Alignment.Companion.BottomEnd
 import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterVertically
+import androidx.compose.ui.Alignment.Companion.End
+import androidx.compose.ui.Alignment.Companion.TopCenter
+import androidx.compose.ui.Alignment.Companion.TopEnd
+import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.model.api.ApiRequest
 import com.example.wouple.model.api.TemperatureResponse
+import com.example.wouple.ui.theme.Blue10
+import com.example.wouple.ui.theme.Blueish
+import com.example.wouple.ui.theme.Bubbles
+import com.example.wouple.ui.theme.Corn
+import com.example.wouple.ui.theme.Dark10
 import com.example.wouple.ui.theme.Spiro
+import com.example.wouple.ui.theme.Tangerine
+import com.example.wouple.ui.theme.Whitehis
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -61,15 +109,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 const val BASE_URL = "https://api.open-meteo.com"
 
 class MainActivity : ComponentActivity() {
-
-
+    private val temp: MutableState<TemperatureResponse?> = mutableStateOf(null)
     private val temp1: MutableState<TemperatureResponse?> = mutableStateOf(null)
     private val temp2: MutableState<TemperatureResponse?> = mutableStateOf(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            if (temp1.value == null || temp2.value == null) {
+            if (temp1.value == null || temp2.value == null || temp.value == null) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Center) {
                     CircularProgressIndicator()
                 }
@@ -77,6 +124,7 @@ class MainActivity : ComponentActivity() {
                 FirstCardView(
                     temp1 = temp1.value!!,
                     temp2 = temp2.value!!,
+                    temp = temp.value!!,
                     onSearch = { getCurrentData { temp1.value = it } })
             }
         }
@@ -89,6 +137,9 @@ class MainActivity : ComponentActivity() {
         }
         getCurrentData {
             temp2.value = it
+        }
+        getCurrentData {
+            temp.value = it
         }
     }
 
@@ -139,6 +190,7 @@ fun DefaultPreview() {
 
 @Composable
 fun FirstCardView(
+    temp: TemperatureResponse,
     temp1: TemperatureResponse,
     temp2: TemperatureResponse,
     onSearch: (String) -> Unit
@@ -148,13 +200,14 @@ fun FirstCardView(
             .fillMaxSize()
             .paint(
                 when (temp1.current_weather.is_day) {
-                    1 -> painterResource(id = R.drawable.sky)
+                    1 -> painterResource(id = R.drawable.nightone)
                     0 -> painterResource(id = R.drawable.nightone)
                     else -> return
                 },
                 contentScale = ContentScale.Crop
             ),
-        horizontalAlignment = CenterHorizontally
+        horizontalAlignment = CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         SearchBar()
         //Two Blue cards on one page
@@ -164,8 +217,12 @@ fun FirstCardView(
          Box(Modifier.weight(1f)) {
              BlueCardView(temp2, onSearch)
          }*/
+        TildeScreen(temp)
+
+
     }
 }
+
 @Composable
 fun SearchBar() {
     var searchText by remember { mutableStateOf("") }
@@ -242,6 +299,125 @@ fun SearchBar() {
         }
     }
 }
+/*@Composable
+fun SingleLineWave() {
+    val screenWidth = LocalConfiguration.current.screenWidthDp
+    val waveOffset = remember { androidx.compose.animation.core.Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        waveOffset.animateTo(
+            targetValue = (-(screenWidth / 2)).toFloat(),
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 3000, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            )
+        )
+    }
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val wavePath = Path()
+        wavePath.moveTo(0f, size.height / 2)
+
+        val waveAmplitude = 20f
+
+        wavePath.quadraticBezierTo(
+            size.width / 4, size.height / 2 + waveAmplitude + waveOffset.value,
+            size.width / 2, size.height / 2
+        )
+
+        wavePath.quadraticBezierTo(
+            size.width * 3 / 4, size.height / 2 - waveAmplitude + waveOffset.value,
+            size.width, size.height / 2
+        )
+
+        drawPath(
+            path = wavePath,
+            brush = SolidColor(Whitehis)
+        )
+    }
+}*/
+
+@Composable
+fun TildeScreen(temp: TemperatureResponse) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 450.dp)
+    ) {
+        // Draw the bottom half in white color
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+        )
+        {
+
+            Text(
+                text = "Oslo, Norway",
+                modifier = Modifier.align(TopCenter),
+                fontSize = 40.sp,
+                color = Color.Black,
+            )
+            val activity = LocalContext.current
+            Image(
+                painter =  painterResource(id = R.drawable.next), contentDescription = null,
+                modifier = Modifier.clickable {
+                    val intent = Intent(activity, SecondActivity::class.java)
+                    intent.putExtra("temp", temp)
+                    activity.startActivity(intent)
+                }.size(50.dp).align(TopEnd).padding(top = 8.dp),
+            )
+    }
+
+        // Draw the tilde sign (top half) in white color
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            val tildePath = Path()
+            val curveWidth = size.width / 8
+            val curveHeight = size.height / -12
+
+            // Start from the top-left corner of the canvas
+            tildePath.moveTo(-30f, 0f)
+
+            // First curve (bottom)
+            tildePath.cubicTo(
+                -curveWidth, curveHeight,
+                curveWidth * -1, curveHeight * 8,
+                curveWidth * 11, 12f
+            )
+
+            // Draw the tilde sign in white color
+            drawPath(
+                path = tildePath,
+                brush = SolidColor(Color.White)
+            )
+        }
+
+        val activity = LocalContext.current
+        /*Button(
+            onClick = { /* Handle button click here */ val intent = Intent(activity, SecondActivity::class.java)
+                intent.putExtra("temp", temp)
+                activity.startActivity(intent) },
+            modifier = Modifier
+                .align(Alignment.Center),
+            colors = ButtonDefaults.buttonColors(Color.Gray)
+        ) {
+            Text("Click Me")
+        }*/
+        Divider(
+            color = Color.Gray.copy(alpha = 0.8f),
+            thickness = 0.5.dp,
+            modifier = Modifier
+                .padding(bottom = 28.dp)
+                .align(BottomCenter)
+                .padding(horizontal = 20.dp)
+        )
+    }
+
+}
+
+
 /*@Composable
 fun BlueCardView(temp: TemperatureResponse, onSearch: (String) -> Unit) {
     //Blue Card
