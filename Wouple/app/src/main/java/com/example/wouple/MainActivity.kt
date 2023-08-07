@@ -181,7 +181,7 @@ fun FirstCardView(
 
 
         val pagerState = rememberPagerState()
-        HorizontalPager(state = pagerState, count = 3, modifier = Modifier.padding(bottom = 16.dp)) { page ->
+        HorizontalPager(state = pagerState, count = 2) { page ->
             when (page) {
                 0 -> TildeScreen(temp = temp1)
                 1 -> TildeScreen(temp = temp2)
