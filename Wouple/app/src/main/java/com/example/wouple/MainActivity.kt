@@ -90,6 +90,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wouple.manager.WeatherManager.getCurrentWeather
 import com.example.wouple.model.api.ApiRequest
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Blue10
@@ -125,46 +126,25 @@ class MainActivity : ComponentActivity() {
                     temp1 = temp1.value!!,
                     temp2 = temp2.value!!,
                     temp = temp.value!!,
-                    onSearch = { getCurrentData { temp1.value = it } })
+                    onSearch = { getCurrentWeather(this) { temp1.value = it } })
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        getCurrentData {
+        getCurrentWeather(this) {
             temp1.value = it
         }
-        getCurrentData {
+        getCurrentWeather(this) {
             temp2.value = it
         }
-        getCurrentData {
+        getCurrentWeather(this) {
             temp.value = it
         }
     }
 
-    private fun getCurrentData(onSuccessCall: (TemperatureResponse) -> Unit) {
-        val context = this.applicationContext
-        val api = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ApiRequest::class.java)
 
-        api.getTemperature().enqueue(object : Callback<TemperatureResponse> {
-            override fun onFailure(call: Call<TemperatureResponse>, t: Throwable) {
-                Toast.makeText(context, t.message, Toast.LENGTH_LONG).show()
-
-            }
-
-            override fun onResponse(
-                call: Call<TemperatureResponse>,
-                response: Response<TemperatureResponse>
-            ) {
-                response.body()?.let { onSuccessCall(it) }
-            }
-        })
-    }
 }
 
 
