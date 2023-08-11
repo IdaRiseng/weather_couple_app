@@ -6,12 +6,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.Animatable
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Canvas
@@ -27,105 +22,83 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
-import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.swipeable
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Bottom
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.BottomEnd
+import androidx.compose.ui.Alignment.Companion.BottomStart
 import androidx.compose.ui.Alignment.Companion.Center
-import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.Alignment.Companion.CenterVertically
-import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathOperation
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.model.api.ApiRequest
 import com.example.wouple.model.api.TemperatureResponse
-import com.example.wouple.ui.theme.Blue10
-import com.example.wouple.ui.theme.Blueish
-import com.example.wouple.ui.theme.Bubbles
-import com.example.wouple.ui.theme.Corn
-import com.example.wouple.ui.theme.Dark10
+import com.example.wouple.ui.theme.Dark20
 import com.example.wouple.ui.theme.Spiro
-import com.example.wouple.ui.theme.Tangerine
-import com.example.wouple.ui.theme.Whitehis
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.LocalTime
 
 const val BASE_URL = "https://api.open-meteo.com"
 
 class MainActivity : ComponentActivity() {
-    private val temp: MutableState<TemperatureResponse?> = mutableStateOf(null)
     private val temp1: MutableState<TemperatureResponse?> = mutableStateOf(null)
     private val temp2: MutableState<TemperatureResponse?> = mutableStateOf(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            if (temp1.value == null || temp2.value == null || temp.value == null) {
+            if (temp1.value == null || temp2.value == null) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Center) {
                     CircularProgressIndicator()
                 }
             } else {
                 FirstCardView(
                     temp1 = temp1.value!!,
-                    temp2 = temp2.value!!,
-                    temp = temp.value!!,
-                    onSearch = { getCurrentData { temp1.value = it } })
+                    temp2 = temp2.value!!
+                ) { getCurrentData { temp1.value = it } }
             }
         }
     }
@@ -137,9 +110,6 @@ class MainActivity : ComponentActivity() {
         }
         getCurrentData {
             temp2.value = it
-        }
-        getCurrentData {
-            temp.value = it
         }
     }
 
@@ -187,10 +157,9 @@ fun DefaultPreview() {
         FirstCardView(temperature, temperature)
     }
 }*/
-
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun FirstCardView(
-    temp: TemperatureResponse,
     temp1: TemperatureResponse,
     temp2: TemperatureResponse,
     onSearch: (String) -> Unit
@@ -200,7 +169,7 @@ fun FirstCardView(
             .fillMaxSize()
             .paint(
                 when (temp1.current_weather.is_day) {
-                    1 -> painterResource(id = R.drawable.nightone)
+                    1 -> painterResource(id = R.drawable.sky)
                     0 -> painterResource(id = R.drawable.nightone)
                     else -> return
                 },
@@ -217,10 +186,16 @@ fun FirstCardView(
          Box(Modifier.weight(1f)) {
              BlueCardView(temp2, onSearch)
          }*/
-        TildeScreen(temp)
-
-
+        val pagerState = rememberPagerState()
+        HorizontalPager(state = pagerState, count = 2, modifier = Modifier.padding(bottom = 0.dp))
+        { page ->
+            when (page) {
+                0 -> TildeScreen(temp = temp1)
+                1 -> TildeScreen(temp = temp2)
+            }
+        }
     }
+
 }
 
 @Composable
@@ -351,24 +326,49 @@ fun TildeScreen(temp: TemperatureResponse) {
                 .background(Color.White),
         )
         {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null,
+                modifier = Modifier.align(TopStart).padding(start = 100.dp, top = 8.dp).size(40.dp)
+            )
 
             Text(
-                text = "Oslo, Norway",
+                text = "OSLO",
                 modifier = Modifier.align(TopCenter),
                 fontSize = 40.sp,
                 color = Color.Black,
             )
             val activity = LocalContext.current
             Image(
-                painter =  painterResource(id = R.drawable.next), contentDescription = null,
-                modifier = Modifier.clickable {
-                    val intent = Intent(activity, SecondActivity::class.java)
-                    intent.putExtra("temp", temp)
-                    activity.startActivity(intent)
-                }.size(50.dp).align(TopEnd).padding(top = 8.dp),
+                painter = painterResource(id = R.drawable.next), contentDescription = null,
+                modifier = Modifier
+                    .clickable {
+                        val intent = Intent(activity, SecondActivity::class.java)
+                        intent.putExtra("temp", temp)
+                        activity.startActivity(intent)
+                    }
+                    .size(50.dp)
+                    .align(TopEnd)
+                    .padding(top = 8.dp),
             )
-    }
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 2.dp)
+                .size(120.dp)
+                .padding(start = 16.dp, end = 16.dp),
+            horizontalAlignment = CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Row(
+                modifier = Modifier,
+                verticalAlignment = Alignment.CenterVertically
 
+            ) {
+                Text(text = "The weather")
+                Text(text = "Second Location")
+            }
+            }
         // Draw the tilde sign (top half) in white color
         Canvas(
             modifier = Modifier.fillMaxSize()
@@ -393,18 +393,6 @@ fun TildeScreen(temp: TemperatureResponse) {
                 brush = SolidColor(Color.White)
             )
         }
-
-        val activity = LocalContext.current
-        /*Button(
-            onClick = { /* Handle button click here */ val intent = Intent(activity, SecondActivity::class.java)
-                intent.putExtra("temp", temp)
-                activity.startActivity(intent) },
-            modifier = Modifier
-                .align(Alignment.Center),
-            colors = ButtonDefaults.buttonColors(Color.Gray)
-        ) {
-            Text("Click Me")
-        }*/
         Divider(
             color = Color.Gray.copy(alpha = 0.8f),
             thickness = 0.5.dp,
@@ -414,8 +402,8 @@ fun TildeScreen(temp: TemperatureResponse) {
                 .padding(horizontal = 20.dp)
         )
     }
-
 }
+
 
 
 /*@Composable

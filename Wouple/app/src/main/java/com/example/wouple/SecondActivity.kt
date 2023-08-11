@@ -1,8 +1,10 @@
 package com.example.wouple
 
+import android.graphics.RectF
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,20 +15,25 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.WeatherCondition.RAINY
@@ -34,6 +41,11 @@ import com.example.wouple.WeatherCondition.SNOWY
 import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.*
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+import java.lang.Math.cos
+import java.lang.Math.sin
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -50,6 +62,7 @@ class SecondActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun SecondCardView(temp: TemperatureResponse) {
     val scrollStateOne = rememberScrollState()
@@ -59,7 +72,7 @@ fun SecondCardView(temp: TemperatureResponse) {
         (temp.current_weather.weathercode in listOf(0, 1, 2) && isDay) -> R.drawable.sky
         (temp.current_weather.weathercode == 3) -> R.drawable.overcast
         (temp.current_weather.weathercode in listOf(51, 53, 55)) -> R.drawable.drizzle
-        (temp.current_weather.weathercode in listOf(61, 63, 65)) -> R.drawable.rainybackground
+        (temp.current_weather.weathercode in listOf(61, 63, 65)) -> R.drawable.drizzle
         (temp.current_weather.weathercode in listOf(85, 86)) -> R.drawable.snowshowers
         else -> R.drawable.sky
     }
@@ -73,6 +86,7 @@ fun SecondCardView(temp: TemperatureResponse) {
             )
             .verticalScroll(scrollStateOne),
     ) {
+
         val index =
             temp.hourly.time.map { LocalDateTime.parse(it).hour }.indexOf(LocalDateTime.now().hour)
         val feelsLike = index.let { temp.hourly.apparent_temperature[it].toInt() }
@@ -84,87 +98,52 @@ fun SecondCardView(temp: TemperatureResponse) {
         val visibilityInMeters = index.let { temp.hourly.visibility[it].toInt() }
 
         LocationView(temp)
-        Row() {
+        Row {
             SunRise(temp)
             SunSet(temp)
         }
         HourlyForecastView(temp)
         WeeklyForeCastView(temp)
         Spacer(modifier = Modifier.padding(6.dp))
-        ExtraCards(
-            "Feels Like",
-            feelsLike.let {
-                temp.hourly.apparent_temperature[it].toInt().toString()
-            } + temp.hourly_units.apparent_temperature,
-            painterResource(id = R.drawable.temperaturea))
-        ExtraCards(
-            "Rainfall",
-            rainFall.toString() + temp.daily_units.rain_sum,
-            painterResource(id = R.drawable.drop)
-        )
-        ExtraCards(
-            "Humidity",
-            temp.hourly_units.relativehumidity_2m + humidity.toString(),
-            painterResource(id = R.drawable.humidity)
-        )
+        val pagerState = rememberPagerState()
+        HorizontalPager(state = pagerState, count = 5, modifier = Modifier.padding(bottom = 16.dp))
+        { page ->
+            when (page) {
+                0 -> ExtraCards(
+                    Text = "Feels Like",
+                    Numbers = feelsLike.let {
+                        temp.hourly.apparent_temperature[it].toInt().toString()
+                    } + temp.hourly_units.apparent_temperature,
+                    Icon = painterResource(id = R.drawable.temperaturea))
 
-        ExtraCards(
-            "Visibility",
-            visibilityInMeters.toString() + temp.hourly_units.visibility,
-            painterResource(id = R.drawable.eye)
-        )
-        ExtraCards(
-            "Dew Point",
-            dewPoint.toString() + temp.hourly_units.temperature_2m,
-            painterResource(id = R.drawable.dew)
-        )
+                1 -> ExtraCards(
+                    Text = "Rainfall",
+                    Numbers = rainFall.toString() + temp.daily_units.rain_sum,
+                    Icon = painterResource(id = R.drawable.drop)
+                )
+
+                2 -> ExtraCards(
+                    Text = "Humidity",
+                    Numbers = temp.hourly_units.relativehumidity_2m + humidity.toString(),
+                    Icon = painterResource(id = R.drawable.humidity)
+                )
+
+                3 -> ExtraCards(
+                    Text = "Visibility",
+                    Numbers = visibilityInMeters.toString() + temp.hourly_units.visibility,
+                    Icon = painterResource(id = R.drawable.eye)
+                )
+
+                4 -> ExtraCards(
+                    Text = "Dew Point",
+                    Numbers = dewPoint.toString() + temp.hourly_units.temperature_2m,
+                    Icon = painterResource(id = R.drawable.dew)
+                )
+            }
+        }
     }
 }
 
-@Composable
-fun TildeScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 500.dp)
-    ) {
-        // Draw the bottom half in white color
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-        )
-        {
-
-        }
-
-        // Draw the tilde sign (top half) in white color
-        Canvas(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            val tildePath = Path()
-            val curveWidth = size.width / 8
-            val curveHeight = size.height / -12
-
-            // Start from the top-left corner of the canvas
-            tildePath.moveTo(-30f, 0f)
-
-            // First curve (bottom)
-            tildePath.cubicTo(
-                -curveWidth, curveHeight,
-                curveWidth * -1, curveHeight * 8,
-                curveWidth * 11, 12f
-            )
-
-            // Draw the tilde sign in white color
-            drawPath(
-                path = tildePath,
-                brush = SolidColor(Color.White)
-            )
-        }
-    }
-
-}
 @Composable
 fun LocationView(temp: TemperatureResponse) {
     Column(
@@ -268,17 +247,19 @@ fun HourlyForecastView(temp: TemperatureResponse) {
 
                 if (isDaytime) {
                     val hourlyWeatherCondition = when (temp.hourly.weathercode[index]) {
-                        1, 2 -> WeatherCondition.SUNNY
-                        3, 4 -> WeatherCondition.CLOUDY
-                        66 -> RAINY
-                        else -> WeatherCondition.SUNNY // Set a default weather condition in case of an unknown code
+                        0, 1 -> WeatherCondition.SUNNY
+                        2, 3 -> WeatherCondition.CLOUDY
+                        51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> RAINY
+                        71, 73, 75, 77, 85, 86 -> SNOWY
+                        else -> WeatherCondition.SUNNY // Sets a default weather condition in case of an unknown code
                     }
                     Hours(time, temperature, hourlyWeatherCondition)
                 }
                 if (!isDaytime) {
                     val hourlyWeatherConditionNight = when (temp.hourly.weathercode[index]) {
-                        1, 2 -> WeatherCondition.NIGHT
-                        3, 4 -> WeatherCondition.NIGHT
+                        0, 1 -> WeatherCondition.NIGHT
+                        2, 3 -> WeatherCondition.CLOUDY
+                        51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> WeatherCondition.RAINYNIGHT
                         else -> {
                             WeatherCondition.NIGHT
                         }
@@ -292,7 +273,7 @@ fun HourlyForecastView(temp: TemperatureResponse) {
 }
 
 @Composable
-fun SunRise(temp: TemperatureResponse) {
+fun SunRise(temp: TemperatureResponse){
     val now = LocalDateTime.now().toLocalDate()
     val todaySunrise = temp.daily.sunrise.firstOrNull {
         LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
@@ -338,7 +319,7 @@ fun SunRise(temp: TemperatureResponse) {
 
 
     }
-}
+ }
 
 @Composable
 fun SunSet(temp: TemperatureResponse) {
@@ -417,7 +398,8 @@ enum class WeatherCondition(val imageResourceId: Int) {
     RAINY(R.drawable.rainyday),
     CLOUDY(R.drawable.cloudydaylight),
     SNOWY(R.drawable.cloudsnow),
-    NIGHT(R.drawable.nighttime)
+    NIGHT(R.drawable.halfmoonblue),
+    RAINYNIGHT(R.drawable.rainynight)
     // Add more weather conditions and their associated images as needed
 }
 
@@ -476,6 +458,7 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
             val somessd = LocalDate.parse(daysOfWeek).dayOfWeek.toString()
             val forecastMin = temp.daily.temperature_2m_min[days].toInt()
             val forecastMax = temp.daily.temperature_2m_max[days].toInt()
+            val currentTemp = temp.current_weather.temperature.toInt()
 
             val weatherCondition = when (temp.daily.weathercode[days]) {
                 in 0..2 -> WeatherCondition.SUNNY
@@ -517,7 +500,6 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
                         fontSize = 18.sp,
 
                         )
-
                     Text(
                         modifier = Modifier,
                         text = "$forecastMax°",
@@ -525,8 +507,6 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
                         fontSize = 18.sp,
 
                         )
-
-
                 }
                 Divider(
                     color = Spiro.copy(alpha = 0.5f),
@@ -597,3 +577,77 @@ fun ExtraCards(
 
     }
 }
+@Composable
+fun TemperatureProgressBar(forecastMin: Int, forecastMax: Int, currentTemp: Int) {
+    val minTemp = forecastMin.toFloat()
+    val maxTemp = forecastMax.toFloat()
+    val currentTempValue = currentTemp.toFloat()
+
+    val progress = (currentTempValue - minTemp) / (maxTemp - minTemp)
+
+    LinearProgressIndicator(
+        progress = progress,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        color = Spiro
+    )
+}
+@Composable
+fun SunRiseAndSetProgress(temp: TemperatureResponse) {
+    val now = LocalDateTime.now().toLocalTime()
+    val sunriseTime = temp.daily.sunrise.firstOrNull()?.let {
+        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME).toLocalTime()
+    } ?: LocalTime.MIDNIGHT
+
+    val sunsetTime = temp.daily.sunset.firstOrNull()?.let {
+        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME).toLocalTime()
+    } ?: LocalTime.MAX
+
+    val progress = calculateProgress(now, sunriseTime, sunsetTime)
+    Row(modifier = Modifier
+        .fillMaxHeight()
+        .padding(vertical = 6.dp, horizontal = 50.dp),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically) {
+        // ... (your existing Text and Icon elements)
+
+        DrawHalfCircleProgress(progress)
+
+    }
+}
+@Composable
+private fun DrawHalfCircleProgress(progress: Float) {
+    Canvas(
+        modifier = Modifier
+            .size(300.dp)
+            .padding(2.dp)
+            .fillMaxSize(1f)
+    ) {
+        // Draw the background half-circle
+        drawArc(
+            color = Color.Gray,
+            startAngle = 180f,
+            sweepAngle = 180f,
+            useCenter = false,
+            style = Stroke(8.dp.toPx())
+        )
+
+        // Draw the progress half-circle
+        drawArc(
+            color = Spiro,
+            startAngle = 180f,
+            sweepAngle = 180f * progress,
+            useCenter = false,
+            style = Stroke(8.dp.toPx())
+        )
+    }
+}
+
+@Composable
+private fun calculateProgress(currentTime: LocalTime, sunriseTime: LocalTime, sunsetTime: LocalTime): Float {
+    val totalMinutes = sunsetTime.toSecondOfDay().toFloat() - sunriseTime.toSecondOfDay().toFloat()
+    val elapsedMinutes = currentTime.toSecondOfDay().toFloat() - sunriseTime.toSecondOfDay().toFloat()
+    return (elapsedMinutes / totalMinutes).coerceIn(0f, 1f)
+}
+
