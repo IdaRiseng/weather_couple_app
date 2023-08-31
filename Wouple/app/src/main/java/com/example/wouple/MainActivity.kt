@@ -3,7 +3,6 @@ package com.example.wouple
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
@@ -43,8 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
-import androidx.compose.ui.Alignment.Companion.BottomEnd
-import androidx.compose.ui.Alignment.Companion.BottomStart
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.TopCenter
@@ -53,13 +50,9 @@ import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -67,19 +60,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.wouple.model.api.ApiRequest
+import com.example.wouple.manager.WeatherManager.getCurrentWeather
 import com.example.wouple.model.api.TemperatureResponse
-import com.example.wouple.ui.theme.Dark20
 import com.example.wouple.ui.theme.Spiro
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.time.LocalTime
 
 const val BASE_URL = "https://api.open-meteo.com"
 
@@ -97,43 +83,21 @@ class MainActivity : ComponentActivity() {
             } else {
                 FirstCardView(
                     temp1 = temp1.value!!,
-                    temp2 = temp2.value!!
-                ) { getCurrentData { temp1.value = it } }
+                    temp2 = temp2.value!!,
+                    onSearch = { getCurrentWeather(this) { temp1.value = it } })
+
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        getCurrentData {
+        getCurrentWeather(this) {
             temp1.value = it
         }
-        getCurrentData {
+        getCurrentWeather(this) {
             temp2.value = it
         }
-    }
-
-    private fun getCurrentData(onSuccessCall: (TemperatureResponse) -> Unit) {
-        val context = this.applicationContext
-        val api = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ApiRequest::class.java)
-
-        api.getTemperature().enqueue(object : Callback<TemperatureResponse> {
-            override fun onFailure(call: Call<TemperatureResponse>, t: Throwable) {
-                Toast.makeText(context, t.message, Toast.LENGTH_LONG).show()
-
-            }
-
-            override fun onResponse(
-                call: Call<TemperatureResponse>,
-                response: Response<TemperatureResponse>
-            ) {
-                response.body()?.let { onSuccessCall(it) }
-            }
-        })
     }
 }
 
