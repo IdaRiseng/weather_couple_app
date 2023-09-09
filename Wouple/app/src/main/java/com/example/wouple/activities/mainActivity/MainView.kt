@@ -1,17 +1,11 @@
-package com.example.wouple
-
+package com.example.wouple.activities.mainActivity
 
 import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,11 +15,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
+import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -35,18 +29,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.BottomCenter
-import androidx.compose.ui.Alignment.Companion.Center
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.Alignment.Companion.TopCenter
-import androidx.compose.ui.Alignment.Companion.TopEnd
-import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.rotate
@@ -57,49 +44,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.wouple.manager.WeatherManager.getCurrentWeather
+import com.example.wouple.R
+import com.example.wouple.activities.detailActivity.SecondActivity
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Spiro
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-
-const val BASE_URL = "https://api.open-meteo.com"
-
-class MainActivity : ComponentActivity() {
-    private val temp1: MutableState<TemperatureResponse?> = mutableStateOf(null)
-    private val temp2: MutableState<TemperatureResponse?> = mutableStateOf(null)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            if (temp1.value == null || temp2.value == null) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Center) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                FirstCardView(
-                    temp1 = temp1.value!!,
-                    temp2 = temp2.value!!,
-                    onSearch = { getCurrentWeather(this) { temp1.value = it } })
-
-            }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        getCurrentWeather(this) {
-            temp1.value = it
-        }
-        getCurrentWeather(this) {
-            temp2.value = it
-        }
-    }
-}
 
 
 /*@Preview(showBackground = true)
@@ -126,7 +82,8 @@ fun DefaultPreview() {
 fun FirstCardView(
     temp1: TemperatureResponse,
     temp2: TemperatureResponse,
-    onSearch: (String) -> Unit
+    onSearch: (String) -> Unit,
+    onDetailsButtonClicked: (TemperatureResponse) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -139,7 +96,7 @@ fun FirstCardView(
                 },
                 contentScale = ContentScale.Crop
             ),
-        horizontalAlignment = CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         SearchBar()
@@ -154,8 +111,8 @@ fun FirstCardView(
         HorizontalPager(state = pagerState, count = 2, modifier = Modifier.padding(bottom = 0.dp))
         { page ->
             when (page) {
-                0 -> TildeScreen(temp = temp1)
-                1 -> TildeScreen(temp = temp2)
+                0 -> TildeScreen(temp = temp1,onDetailsButtonClicked )
+                1 -> TildeScreen(temp = temp2, onDetailsButtonClicked)
             }
         }
     }
@@ -191,7 +148,7 @@ fun SearchBar() {
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 18.dp),
-                textStyle = androidx.compose.ui.text.TextStyle(
+                textStyle = TextStyle(
                     color = Color.Black,
                     fontSize = 18.sp, // Adjusts the font size as desired
                 ),
@@ -199,7 +156,7 @@ fun SearchBar() {
                     Text("Search", color = Color.Gray)
                 },
                 keyboardOptions = KeyboardOptions(
-                    imeAction = androidx.compose.ui.text.input.ImeAction.Search,
+                    imeAction = ImeAction.Search,
                     capitalization = KeyboardCapitalization.Characters
                 ),
                 keyboardActions = KeyboardActions(
@@ -277,62 +234,43 @@ fun SingleLineWave() {
 }*/
 
 @Composable
-fun TildeScreen(temp: TemperatureResponse) {
+fun TildeScreen(
+    temp: TemperatureResponse,
+    onDetailsButtonClicked: (TemperatureResponse) -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(top = 450.dp)
     ) {
         // Draw the bottom half in white color
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-        )
-        {
-            Icon(
-                painter = painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null,
-                modifier = Modifier.align(TopStart).padding(start = 100.dp, top = 8.dp).size(40.dp)
-            )
-
-            Text(
-                text = "OSLO",
-                modifier = Modifier.align(TopCenter),
-                fontSize = 40.sp,
-                color = Color.Black,
-            )
-            val activity = LocalContext.current
-            Image(
-                painter = painterResource(id = R.drawable.next), contentDescription = null,
-                modifier = Modifier
-                    .clickable {
-                        val intent = Intent(activity, SecondActivity::class.java)
-                        intent.putExtra("temp", temp)
-                        activity.startActivity(intent)
-                    }
-                    .size(50.dp)
-                    .align(TopEnd)
-                    .padding(top = 8.dp),
-            )
-        }
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 2.dp)
-                .size(120.dp)
-                .padding(start = 16.dp, end = 16.dp),
-            horizontalAlignment = CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.background(Color.White).fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier,
-                verticalAlignment = Alignment.CenterVertically
+            Row(verticalAlignment = Alignment.CenterVertically)
+            {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null,
+                    modifier = Modifier.size(40.dp)
+                )
+                Text(
+                    text = "OSLO",
+                    fontSize = 40.sp,
+                    color = Color.Black,
+                )
+            }
 
-            ) {
-                Text(text = "The weather")
-                Text(text = "Second Location")
+            Button(
+                modifier = Modifier.padding(top = 16.dp),
+                shape = CircleShape,
+                onClick = {
+                    onDetailsButtonClicked(temp)
+            }) {
+                Text(text = "See weather details")
             }
-            }
+        }
+
         // Draw the tilde sign (top half) in white color
         Canvas(
             modifier = Modifier.fillMaxSize()
@@ -357,17 +295,8 @@ fun TildeScreen(temp: TemperatureResponse) {
                 brush = SolidColor(Color.White)
             )
         }
-        Divider(
-            color = Color.Gray.copy(alpha = 0.8f),
-            thickness = 0.5.dp,
-            modifier = Modifier
-                .padding(bottom = 28.dp)
-                .align(BottomCenter)
-                .padding(horizontal = 20.dp)
-        )
     }
 }
-
 
 
 /*@Composable

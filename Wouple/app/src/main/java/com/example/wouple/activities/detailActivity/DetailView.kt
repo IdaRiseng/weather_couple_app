@@ -1,66 +1,56 @@
-package com.example.wouple
+package com.example.wouple.activities.detailActivity
 
-import android.graphics.RectF
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.wouple.WeatherCondition.RAINY
-import com.example.wouple.WeatherCondition.SNOWY
+import com.example.wouple.R
 import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.TemperatureResponse
-import com.example.wouple.ui.theme.*
+import com.example.wouple.ui.theme.Corn
+import com.example.wouple.ui.theme.Dark20
+import com.example.wouple.ui.theme.Spiro
+import com.example.wouple.ui.theme.Tangerine
+import com.example.wouple.ui.theme.Whitehis
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import java.lang.Math.cos
-import java.lang.Math.sin
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-class SecondActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            val temp = intent.getParcelableExtra<TemperatureResponse>("temp")
-            temp?.let { SecondCardView(it) }
-        }
-    }
-}
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -150,7 +140,7 @@ fun LocationView(temp: TemperatureResponse) {
         modifier = Modifier
             .padding(top = 40.dp, bottom = 20.dp)
             .fillMaxWidth(1f),
-        horizontalAlignment = CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "OSLO",
@@ -223,7 +213,7 @@ fun HourlyForecastView(temp: TemperatureResponse) {
 
             Text(
                 modifier = Modifier
-                    .align(CenterVertically)
+                    .align(Alignment.CenterVertically)
                     .padding(start = 10.dp),
                 text = "HOURLY FORECAST",
                 color = Corn
@@ -249,8 +239,8 @@ fun HourlyForecastView(temp: TemperatureResponse) {
                     val hourlyWeatherCondition = when (temp.hourly.weathercode[index]) {
                         0, 1 -> WeatherCondition.SUNNY
                         2, 3 -> WeatherCondition.CLOUDY
-                        51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> RAINY
-                        71, 73, 75, 77, 85, 86 -> SNOWY
+                        51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> WeatherCondition.RAINY
+                        71, 73, 75, 77, 85, 86 -> WeatherCondition.SNOWY
                         else -> WeatherCondition.SUNNY // Sets a default weather condition in case of an unknown code
                     }
                     Hours(time, temperature, hourlyWeatherCondition)
@@ -319,7 +309,7 @@ fun SunRise(temp: TemperatureResponse){
 
 
     }
- }
+}
 
 @Composable
 fun SunSet(temp: TemperatureResponse) {
@@ -371,7 +361,7 @@ fun Hours(time: String, temperature: String, hourlyWeatherCondition: WeatherCond
     Column(
         modifier = Modifier
             .padding(4.dp),
-        horizontalAlignment = CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
@@ -415,7 +405,7 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
     ) {
         Row(
             modifier = Modifier.padding(start = 8.dp, top = 8.dp, bottom = 8.dp),
-            verticalAlignment = CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Icon(
@@ -427,7 +417,7 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
             Text(
                 modifier = Modifier
                     .padding(start = 8.dp)
-                    .align(CenterVertically),
+                    .align(Alignment.CenterVertically),
                 text = "WEEKLY FORECAST",
                 color = Corn
             )
@@ -463,8 +453,8 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
             val weatherCondition = when (temp.daily.weathercode[days]) {
                 in 0..2 -> WeatherCondition.SUNNY
                 3, 4 -> WeatherCondition.CLOUDY
-                in listOf(51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82) -> RAINY
-                in listOf(71, 73, 75, 77) -> SNOWY
+                in listOf(51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82) -> WeatherCondition.RAINY
+                in listOf(71, 73, 75, 77) -> WeatherCondition.SNOWY
                 else -> WeatherCondition.SUNNY // Set a default weather condition in case of an unknown code
             }
 
@@ -475,7 +465,7 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    verticalAlignment = CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
@@ -533,12 +523,12 @@ fun ExtraCards(
             .padding(start = 16.dp, end = 16.dp)
             .shadow(1.dp, RoundedCornerShape(20.dp))
             .background(Dark20),
-        horizontalAlignment = CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Row(
             modifier = Modifier,
-            verticalAlignment = CenterVertically
+            verticalAlignment = Alignment.CenterVertically
 
         ) {
 
@@ -650,4 +640,3 @@ private fun calculateProgress(currentTime: LocalTime, sunriseTime: LocalTime, su
     val elapsedMinutes = currentTime.toSecondOfDay().toFloat() - sunriseTime.toSecondOfDay().toFloat()
     return (elapsedMinutes / totalMinutes).coerceIn(0f, 1f)
 }
-
