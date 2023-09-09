@@ -2,7 +2,7 @@ package com.example.wouple.manager
 
 import android.content.Context
 import android.widget.Toast
-import com.example.wouple.BASE_URL
+import com.example.wouple.activities.mainActivity.BASE_URL
 import com.example.wouple.BuildConfig
 import com.example.wouple.model.api.ApiRequest
 import com.example.wouple.model.api.TemperatureResponse
