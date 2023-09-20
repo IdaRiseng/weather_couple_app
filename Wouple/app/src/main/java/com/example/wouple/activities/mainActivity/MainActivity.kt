@@ -20,27 +20,27 @@ import com.example.wouple.ui.theme.WoupleTheme
 const val BASE_URL = "https://api.open-meteo.com"
 
 class MainActivity : ComponentActivity() {
-    private val temp1: MutableState<TemperatureResponse?> = mutableStateOf(null)
+    private val temp: MutableState<TemperatureResponse?> = mutableStateOf(null)
     private val temp2: MutableState<TemperatureResponse?> = mutableStateOf(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             WoupleTheme {
-                if (temp1.value == null || temp2.value == null) {
+                if (temp.value == null || temp2.value == null) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Center) {
                         CircularProgressIndicator()
                     }
                 } else {
                     FirstCardView(
-                        temp1 = temp1.value!!,
+                        temp = temp.value!!,
                         temp2 = temp2.value!!,
-                        onSearch = { getCurrentWeather(this) { temp1.value = it } },
-                        onDetailsButtonClicked = { temp ->
-                            val intent = Intent(this, SecondActivity::class.java)
-                            intent.putExtra("temp", temp)
-                            this.startActivity(intent)
-                        })
+                        onSearch = { getCurrentWeather(this) { temp.value = it } }
+                    ) { temp ->
+                        val intent = Intent(this, SecondActivity::class.java)
+                        intent.putExtra("temp", temp)
+                        this.startActivity(intent)
+                    }
                 }
             }
         }
@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         getCurrentWeather(this) {
-            temp1.value = it
+            temp.value = it
         }
         getCurrentWeather(this) {
             temp2.value = it

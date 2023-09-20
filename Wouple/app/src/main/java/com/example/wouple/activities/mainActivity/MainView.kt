@@ -1,25 +1,31 @@
 package com.example.wouple.activities.mainActivity
 
-import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ButtonElevation
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -29,33 +35,41 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Bottom
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.paint
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.R
-import com.example.wouple.activities.detailActivity.SecondActivity
 import com.example.wouple.model.api.TemperatureResponse
+import com.example.wouple.ui.theme.Corn
+import com.example.wouple.ui.theme.Dark20
+import com.example.wouple.ui.theme.Pastel
 import com.example.wouple.ui.theme.Spiro
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
+import com.example.wouple.ui.theme.Whitehis
+import kotlinx.coroutines.NonCancellable.isActive
+import kotlinx.coroutines.delay
+import kotlin.math.PI
 
 
 /*@Preview(showBackground = true)
@@ -77,10 +91,9 @@ fun DefaultPreview() {
         FirstCardView(temperature, temperature)
     }
 }*/
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun FirstCardView(
-    temp1: TemperatureResponse,
+    temp: TemperatureResponse,
     temp2: TemperatureResponse,
     onSearch: (String) -> Unit,
     onDetailsButtonClicked: (TemperatureResponse) -> Unit
@@ -88,36 +101,295 @@ fun FirstCardView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .paint(
-                when (temp1.current_weather.is_day) {
-                    1 -> painterResource(id = R.drawable.sky)
-                    0 -> painterResource(id = R.drawable.nightone)
-                    else -> return
-                },
-                contentScale = ContentScale.Crop
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        /* .paint(
+             when (temp1.current_weather.is_day) {
+                 1 -> painterResource(id = R.drawable.sky)
+                 else -> return
+             },
+             contentScale = ContentScale.None
+         ),*/
     ) {
-        SearchBar()
-        //Two Blue cards on one page
-        /* Box(Modifier.weight(1f)) {
-             BlueCardView(temp1, onSearch)
-         }
-         Box(Modifier.weight(1f)) {
-             BlueCardView(temp2, onSearch)
-         }*/
-        val pagerState = rememberPagerState()
-        HorizontalPager(state = pagerState, count = 2, modifier = Modifier.padding(bottom = 0.dp))
-        { page ->
-            when (page) {
-                0 -> TildeScreen(temp = temp1,onDetailsButtonClicked )
-                1 -> TildeScreen(temp = temp2, onDetailsButtonClicked)
+        Box(
+            modifier = Modifier
+                .fillMaxHeight(0.5f)
+                .fillMaxWidth()
+                .background(Dark20)
+                .padding(bottom = 18.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 50.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    modifier = Modifier
+                        .padding(start = 16.dp),
+                    text = "17°",
+                    fontSize = 80.sp,
+                    color = Color.White,
+                )
+                Text(
+                    text = "NEW YORK",
+                    fontSize = 50.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+                Image(
+                    painter = painterResource(id = R.drawable.sun), contentDescription = null,
+                    modifier = Modifier.size(60.dp), alignment = Alignment.BottomEnd
+                )
+                Button(
+                    modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(Whitehis),
+                    onClick = {
+                        onDetailsButtonClicked(temp)
+                    }) {
+                    Text(text = "Weather details")
+                }
+                /*  val pagerState = rememberPagerState()
+                  HorizontalPager(state = pagerState, count = 2, modifier = Modifier)
+                  { page ->
+                      when (page) {
+                          0 -> TildeScreen(temp = temp1,onDetailsButtonClicked )
+                          1 -> TildeScreen(temp = temp2, onDetailsButtonClicked)
+                      }
+                  }*/
+            }
+            Column(modifier = Modifier.fillMaxSize()) {
+                SearchBar()
+            }
+            HorizontalWave(
+                phase = rememberPhaseState(0f),
+                alpha = 1f,
+                amplitude = 50f,
+                frequency = 0.5f
+            )
+            HorizontalWave(
+                phase = rememberPhaseState(15f),
+                alpha = 0.5f,
+                amplitude = 80f,
+                frequency = 0.3f
+            )
+            HorizontalWave(
+                phase = rememberPhaseState(10f),
+                alpha = 0.2f,
+                amplitude = 40f,
+                frequency = 0.6f
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxHeight(0.5f)
+                .background(Color.White)
+                .padding(top = 16.dp)
+        ) {
+
+            TodayWeatherCard()
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxHeight(1f)
+                .background(Color.White)
+                .padding(bottom = 16.dp)
+        ) {
+            ClickableCardDemo()
+        }
+    }
+}
+/*@Composable
+fun ExpandableCards(onDetailsButtonClicked: (TemperatureResponse) -> Unit) {
+    var isCard1Expanded by remember { mutableStateOf(false) }
+    var isCard2Expanded by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    ) {
+        ExpandableCard(
+            isExpanded = isCard1Expanded,
+            onToggle = { isCard1Expanded = !isCard1Expanded },
+            title = "Weather Details",
+            content = {
+                Text(
+                    text = "This is the content of Card 1",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        ExpandableCard(
+            isExpanded = isCard2Expanded,
+            onToggle = { isCard2Expanded = !isCard2Expanded },
+            title = "Card 2",
+            content = {
+                Text(
+                    text = "This is the content of Card 2",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        )
+    }
+}*/
+
+@Composable
+private fun TodayWeatherCard() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = 4.dp,
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.snowshowers),
+            contentDescription = null, contentScale = ContentScale.Crop,
+        )
+
+        Text(
+            text = "Today's Weather",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(16.dp)
+        )
+        Column(
+            modifier = Modifier.padding(top = 40.dp),
+        ) {
+            Row(
+                modifier = Modifier.align(CenterHorizontally)
+            )
+            {
+                Text(
+                    text = "17°",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp,
+                    textAlign = TextAlign.Start,
+                )
+                Spacer(modifier = Modifier.padding(20.dp))
+                Text(
+                    text = "17°",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp,
+                    textAlign = TextAlign.Start,
+                )
+            }
+            Text(
+                text = "Feels like: 18°",
+                fontWeight = FontWeight.Normal,
+                fontSize = 18.sp,
+                modifier = Modifier
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun HorizontalPagerIndicator(step: Int, totalSteps: Int) {
+
+    @Composable
+    fun Dot(isSelected: Boolean) {
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 4.dp, vertical = 16.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+                .width(if (isSelected) 16.dp else 8.dp)
+                .height(8.dp)
+        )
+    }
+
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+        repeat(totalSteps) {
+            if (it == step) {
+                Dot(true)
+            } else {
+                Dot(false)
             }
         }
     }
-
 }
+
+/*@Composable
+fun ExpandableCard(
+    isExpanded: Boolean,
+    onToggle: () -> Unit,
+    title: String,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .pointerInput(Unit) {
+                detectTapGestures { Offset ->
+                    onToggle()
+                }
+            },
+        elevation = 4.dp,
+        backgroundColor = Color.White,
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row() {
+
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                Icon(
+                    imageVector = if (isExpanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
+                    contentDescription = null, tint = Orange
+                )
+            }
+
+            if (isExpanded) {
+                content()
+            }
+        }
+    }
+}
+*/
+@Composable
+fun ClickableCardDemo() {
+    Card(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        backgroundColor = Color.Black,
+        shape = RoundedCornerShape(20.dp),
+        elevation = 4.dp
+    ) {
+        // Card content goes here
+        Image(
+            painter = painterResource(id = R.drawable.drizzle),
+            contentDescription = null, contentScale = ContentScale.Crop
+        )
+        Text(
+            text = "Thunderbolt Hunt",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(16.dp)
+        )
+
+    }
+}
+
 
 @Composable
 fun SearchBar() {
@@ -129,7 +401,6 @@ fun SearchBar() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .height(56.dp)
             .background(
                 color = if (isSearchExpanded) Color.White else Color.Transparent,
                 shape = RoundedCornerShape(28.dp)
@@ -150,10 +421,14 @@ fun SearchBar() {
                     .padding(start = 18.dp),
                 textStyle = TextStyle(
                     color = Color.Black,
-                    fontSize = 18.sp, // Adjusts the font size as desired
+                    fontSize = 18.sp,
                 ),
                 placeholder = {
-                    Text("Search", color = Color.Gray)
+                    Text(
+                        modifier = Modifier.padding(start = 16.dp),
+                        text = "Search a city or airport",
+                        color = Color.Gray
+                    )
                 },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Search,
@@ -189,51 +464,61 @@ fun SearchBar() {
             Icon(
                 imageVector = if (isSearchExpanded) Icons.Default.Clear else Icons.Default.Search,
                 contentDescription = "Search",
-                tint = if (isSearchExpanded) Color.Black else Color.Black,
+                tint = if (isSearchExpanded) Color.Black else Color.White,
                 modifier = Modifier.size(42.dp)
             )
         }
     }
 }
-/*@Composable
-fun SingleLineWave() {
-    val screenWidth = LocalConfiguration.current.screenWidthDp
-    val waveOffset = remember { androidx.compose.animation.core.Animatable(0f) }
-
-    LaunchedEffect(Unit) {
-        waveOffset.animateTo(
-            targetValue = (-(screenWidth / 2)).toFloat(),
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 3000, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse
-            )
-        )
-    }
-
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val wavePath = Path()
-        wavePath.moveTo(0f, size.height / 2)
-
-        val waveAmplitude = 20f
-
-        wavePath.quadraticBezierTo(
-            size.width / 4, size.height / 2 + waveAmplitude + waveOffset.value,
-            size.width / 2, size.height / 2
-        )
-
-        wavePath.quadraticBezierTo(
-            size.width * 3 / 4, size.height / 2 - waveAmplitude + waveOffset.value,
-            size.width, size.height / 2
-        )
-
-        drawPath(
-            path = wavePath,
-            brush = SolidColor(Whitehis)
-        )
-    }
-}*/
 
 @Composable
+private fun HorizontalWave(
+    phase: MutableState<Float>,
+    alpha: Float,
+    amplitude: Float,
+    frequency: Float
+) {
+    Canvas(
+        modifier = Modifier.fillMaxWidth(),
+        onDraw = {
+            val wavePath = Path()
+            val centerY = size.height / 2f
+            var x = 0
+
+            wavePath.moveTo(0f, centerY + amplitude)
+
+            while (x < size.width.toInt()) {
+                val y =
+                    centerY + amplitude * kotlin.math.cos(2 * PI * frequency * x / size.width + phase.value)
+                wavePath.lineTo(x.toFloat(), y.toFloat())
+                x++
+            }
+            wavePath.lineTo(x.toFloat(), centerY + amplitude)
+
+            drawPath(
+                path = wavePath,
+                color = Color.White,
+                alpha = alpha,
+                style = Fill
+            )
+        }
+    )
+}
+
+@Composable
+private fun rememberPhaseState(startPosition: Float): MutableState<Float> {
+    val step: Long = 100 //countdown seconds
+    val phase = remember { mutableStateOf(startPosition) }
+    LaunchedEffect(phase, step) {
+        while (isActive) {
+            phase.value = phase.value + 0.02f
+            delay(step)
+        }
+    }
+    return phase
+}
+
+/*@Composable
 fun TildeScreen(
     temp: TemperatureResponse,
     onDetailsButtonClicked: (TemperatureResponse) -> Unit
@@ -241,33 +526,33 @@ fun TildeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 450.dp)
+            .padding(top = 350.dp),
+        Alignment.TopCenter
     ) {
         // Draw the bottom half in white color
         Column(
-            modifier = Modifier.background(Color.White).fillMaxSize(),
+            modifier = Modifier
+                .background(Color.White)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(verticalAlignment = Alignment.CenterVertically)
             {
-                Icon(
-                    painter = painterResource(id = R.drawable.baseline_location_on_24), contentDescription = null,
-                    modifier = Modifier.size(40.dp)
-                )
+
                 Text(
                     text = "OSLO",
                     fontSize = 40.sp,
-                    color = Color.Black,
+                    color = Dark20,
                 )
             }
-
+            Spacer(modifier = Modifier.weight(1f))
             Button(
-                modifier = Modifier.padding(top = 16.dp),
+                modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
                 shape = CircleShape,
                 onClick = {
                     onDetailsButtonClicked(temp)
-            }) {
-                Text(text = "See weather details")
+                }) {
+                Text(text = "Weather details")
             }
         }
 
@@ -284,7 +569,7 @@ fun TildeScreen(
 
             // First curve (bottom)
             tildePath.cubicTo(
-                -curveWidth, curveHeight,
+                -curveWidth, -curveHeight,
                 curveWidth * -1, curveHeight * 8,
                 curveWidth * 11, 12f
             )
@@ -296,35 +581,8 @@ fun TildeScreen(
             )
         }
     }
-}
-
-
-/*@Composable
-fun BlueCardView(temp: TemperatureResponse, onSearch: (String) -> Unit) {
-    //Blue Card
-    Column(
-        Modifier
-            .padding(vertical = 8.dp, horizontal = 40.dp)
-            .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
-            .background(Dark20)
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-        horizontalAlignment = CenterHorizontally
-    ) {
-        //This is the top "set location view
-        SetLocationTextField(onSearch)
-        //Row goes that way -->>
-        //Weight makes the boxes equal sizes no matter what phone they have
-        Row(Modifier.weight(1f)) {
-            Box(Modifier.weight(1f)) { TimeView() }
-            Box(Modifier.weight(1f)) { TemperatureView(temp) }
-        }
-        Row(Modifier.weight(1f)) {
-            Box(Modifier.weight(1f)) { WindView(temp) }
-            Box(Modifier.weight(1f)) { ImageWeatherView(R.drawable.rainyday) }
-        }
-    }
-}
-
+}*/
+/*
 @Composable
 fun SetLocationTextField(onSearch: (String) -> Unit) {
     var text by remember { mutableStateOf(("")) }

@@ -73,5 +73,7 @@ dependencies {
     implementation 'androidx.viewpager2:viewpager2:1.1.0-beta02'
 
     implementation 'com.google.accompanist:accompanist-pager-indicators:0.27.1'
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.18.0"
+
 
 }

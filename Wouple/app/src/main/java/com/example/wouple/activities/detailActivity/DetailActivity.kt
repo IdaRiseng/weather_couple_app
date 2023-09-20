@@ -47,10 +47,8 @@ class SecondActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WoupleTheme {
                 val temp = intent.getParcelableExtra<TemperatureResponse>("temp")
                 temp?.let { SecondCardView(it) }
-            }
         }
     }
 }

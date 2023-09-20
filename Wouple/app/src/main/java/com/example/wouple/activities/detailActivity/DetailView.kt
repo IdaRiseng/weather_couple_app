@@ -5,15 +5,19 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
@@ -23,6 +27,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -39,11 +44,13 @@ import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark20
+import com.example.wouple.ui.theme.Pastel
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Tangerine
 import com.example.wouple.ui.theme.Whitehis
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -95,8 +102,9 @@ fun SecondCardView(temp: TemperatureResponse) {
         HourlyForecastView(temp)
         WeeklyForeCastView(temp)
         Spacer(modifier = Modifier.padding(6.dp))
+        
         val pagerState = rememberPagerState()
-        HorizontalPager(state = pagerState, count = 5, modifier = Modifier.padding(bottom = 16.dp))
+        HorizontalPager(state = pagerState, count = 5, modifier = Modifier)
         { page ->
             when (page) {
                 0 -> ExtraCards(
@@ -131,9 +139,34 @@ fun SecondCardView(temp: TemperatureResponse) {
                 )
             }
         }
+        HorizontalPagerIndicator(step = pagerState.currentPage, totalSteps = pagerState.pageCount)
     }
 }
+@Composable
+private fun HorizontalPagerIndicator(step: Int, totalSteps: Int) {
 
+    @Composable
+    fun Dot(isSelected: Boolean) {
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 4.dp, vertical = 16.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+                .width(if (isSelected) 16.dp else 8.dp)
+                .height(8.dp)
+        )
+    }
+
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+        repeat(totalSteps) {
+            if (it == step) {
+                Dot(true)
+            } else {
+                Dot(false)
+            }
+        }
+    }
+}
 @Composable
 fun LocationView(temp: TemperatureResponse) {
     Column(
