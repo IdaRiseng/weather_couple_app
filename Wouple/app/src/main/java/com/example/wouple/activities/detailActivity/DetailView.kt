@@ -26,18 +26,12 @@ import androidx.compose.material.Icon
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -47,27 +41,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.R
+import com.example.wouple.elements.HorizontalWave
+import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark20
-import com.example.wouple.ui.theme.Pastel
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Tangerine
 import com.example.wouple.ui.theme.Whitehis
 import com.example.wouple.ui.theme.Yellow20
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.math.PI
 
 
 @OptIn(ExperimentalPagerApi::class)
@@ -515,52 +506,6 @@ private fun SunsetSunriseCard(temp: TemperatureResponse) {
             }*/
         }
     }
-}
-@Composable
-private fun HorizontalWave(
-    phase: MutableState<Float>,
-    alpha: Float,
-    amplitude: Float,
-    frequency: Float
-) {
-    Canvas(
-        modifier = Modifier.fillMaxWidth(),
-        onDraw = {
-            val wavePath = Path()
-            val centerY = size.height / 2f
-            var x = 0
-
-            wavePath.moveTo(0f, centerY + amplitude)
-
-            while (x < size.width.toInt()) {
-                val y =
-                    centerY + amplitude * kotlin.math.cos(2 * PI * frequency * x / size.width + phase.value)
-                wavePath.lineTo(x.toFloat(), y.toFloat())
-                x++
-            }
-            wavePath.lineTo(x.toFloat(), centerY + amplitude)
-
-            drawPath(
-                path = wavePath,
-                color = Color.White,
-                alpha = alpha,
-                style = Fill
-            )
-        }
-    )
-}
-
-@Composable
-private fun rememberPhaseState(startPosition: Float): MutableState<Float> {
-    val step: Long = 100 //countdown seconds
-    val phase = remember { mutableStateOf(startPosition) }
-    LaunchedEffect(phase, step) {
-        while (NonCancellable.isActive) {
-            phase.value = phase.value + 0.02f
-            delay(step)
-        }
-    }
-    return phase
 }
 
 @Composable

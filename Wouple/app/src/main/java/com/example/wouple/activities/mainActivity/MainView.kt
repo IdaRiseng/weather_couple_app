@@ -77,6 +77,8 @@ import androidx.compose.ui.unit.sp
 import com.example.wouple.R
 import com.example.wouple.activities.detailActivity.Hours
 import com.example.wouple.activities.detailActivity.WeatherCondition
+import com.example.wouple.elements.HorizontalWave
+import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.ColdBlue
@@ -506,53 +508,6 @@ fun SearchBar() {
             )
         }
     }
-}
-
-@Composable
-private fun HorizontalWave(
-    phase: MutableState<Float>,
-    alpha: Float,
-    amplitude: Float,
-    frequency: Float
-) {
-    Canvas(
-        modifier = Modifier.fillMaxWidth(),
-        onDraw = {
-            val wavePath = Path()
-            val centerY = size.height / 2f
-            var x = 0
-
-            wavePath.moveTo(0f, centerY + amplitude)
-
-            while (x < size.width.toInt()) {
-                val y =
-                    centerY + amplitude * kotlin.math.cos(2 * PI * frequency * x / size.width + phase.value)
-                wavePath.lineTo(x.toFloat(), y.toFloat())
-                x++
-            }
-            wavePath.lineTo(x.toFloat(), centerY + amplitude)
-
-            drawPath(
-                path = wavePath,
-                color = Color.White,
-                alpha = alpha,
-                style = Fill
-            )
-        }
-    )
-}
-
-@Composable
-private fun rememberPhaseState(startPosition: Float): MutableState<Float> {
-    val step: Long = 100 //countdown seconds
-    val phase = remember { mutableStateOf(startPosition) }
-    LaunchedEffect(phase, step) {
-        while (isActive) {
-            phase.value = phase.value + 0.02f
-            delay(step)
-        }
-    }
-    return phase
 }
 
 /*@Composable
