@@ -20,17 +20,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -48,15 +55,19 @@ import com.example.wouple.ui.theme.Pastel
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Tangerine
 import com.example.wouple.ui.theme.Whitehis
+import com.example.wouple.ui.theme.Yellow20
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.PI
 
 
 @OptIn(ExperimentalPagerApi::class)
@@ -95,14 +106,15 @@ fun SecondCardView(temp: TemperatureResponse) {
         val visibilityInMeters = index.let { temp.hourly.visibility[it].toInt() }
 
         LocationView(temp)
-        Row {
+        /*Row {
             SunRise(temp)
             SunSet(temp)
-        }
+        }*/
+        SunsetSunriseCard(temp)
         HourlyForecastView(temp)
         WeeklyForeCastView(temp)
         Spacer(modifier = Modifier.padding(6.dp))
-        
+
         val pagerState = rememberPagerState()
         HorizontalPager(state = pagerState, count = 5, modifier = Modifier)
         { page ->
@@ -142,6 +154,7 @@ fun SecondCardView(temp: TemperatureResponse) {
         HorizontalPagerIndicator(step = pagerState.currentPage, totalSteps = pagerState.pageCount)
     }
 }
+
 @Composable
 private fun HorizontalPagerIndicator(step: Int, totalSteps: Int) {
 
@@ -167,6 +180,7 @@ private fun HorizontalPagerIndicator(step: Int, totalSteps: Int) {
         }
     }
 }
+
 @Composable
 fun LocationView(temp: TemperatureResponse) {
     Column(
@@ -296,7 +310,7 @@ fun HourlyForecastView(temp: TemperatureResponse) {
 }
 
 @Composable
-fun SunRise(temp: TemperatureResponse){
+fun SunRise(temp: TemperatureResponse) {
     val now = LocalDateTime.now().toLocalDate()
     val todaySunrise = temp.daily.sunrise.firstOrNull {
         LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
@@ -386,6 +400,167 @@ fun SunSet(temp: TemperatureResponse) {
 
     }
 
+}
+
+@Composable
+private fun SunsetSunriseCard(temp: TemperatureResponse) {
+    val now = LocalDateTime.now().toLocalDate()
+    val todaySunrise = temp.daily.sunset.firstOrNull {
+        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            .toLocalDate()
+            .isEqual(now)
+    }
+
+    val formattedSunset = todaySunrise?.let {
+        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            .format(DateTimeFormatter.ofPattern("HH:mm"))
+    } ?: ""
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = 4.dp,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .background(Dark20),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .background(Dark20),
+                contentAlignment = Alignment.BottomCenter // Align the waves to the bottom center
+            ) {
+            HorizontalWave(
+                phase = rememberPhaseState(startPosition = 10f),
+                alpha = 0.2f,
+                amplitude = 50f ,
+                frequency = 0.5f
+            )
+            HorizontalWave(
+                phase = rememberPhaseState(startPosition = 15f),
+                alpha = 0.3f,
+                amplitude = 80f ,
+                frequency = 0.4f
+            )
+            HorizontalWave(
+                phase = rememberPhaseState(20f),
+                alpha = 0.2f,
+                amplitude = 50f,
+                frequency = 0.4f
+            )
+            }
+            Row(modifier = Modifier
+                .align(Alignment.Center)
+                .padding(16.dp)) {
+
+            Icon(
+                painter = painterResource(id = R.drawable.arrowdropup), contentDescription = null,
+                modifier = Modifier
+                    .size(40.dp), tint = Whitehis
+            )
+           Icon(
+                painter = painterResource(id = R.drawable.sun), contentDescription = null,
+                modifier = Modifier
+                    .size(50.dp), tint = Yellow20
+            )
+                Icon(
+                    painter = painterResource(id = R.drawable.arrowdropdown), contentDescription = null,
+                    modifier = Modifier
+                        .size(40.dp), tint = Whitehis
+                )
+            }
+            Column(modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top) {
+                Text(
+                    modifier = Modifier.padding(start = 16.dp),
+                    text = "Sunrise",
+                    fontSize = 16.sp,
+                    color = Spiro,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text(
+                    modifier = Modifier.padding(start = 8.dp),
+                    text = formattedSunset,
+                    fontSize = 32.sp,
+                    color = Corn,
+                )
+            }
+          /*   Row(
+                modifier = Modifier
+                    .padding(vertical = 6.dp, horizontal = 2.dp)
+                    .background(Dark20)
+                    .padding(6.dp),
+            ) {
+                Text(
+                    modifier = Modifier.padding(start = 10.dp),
+                    text = "Sunset",
+                    fontSize = 16.sp,
+                    color = Spiro
+                )
+                Text(
+                    modifier = Modifier.padding(bottom = 30.dp),
+                    text = formattedSunset,
+                    fontSize = 16.sp,
+                    color = Corn
+                )
+
+
+            }*/
+        }
+    }
+}
+@Composable
+private fun HorizontalWave(
+    phase: MutableState<Float>,
+    alpha: Float,
+    amplitude: Float,
+    frequency: Float
+) {
+    Canvas(
+        modifier = Modifier.fillMaxWidth(),
+        onDraw = {
+            val wavePath = Path()
+            val centerY = size.height / 2f
+            var x = 0
+
+            wavePath.moveTo(0f, centerY + amplitude)
+
+            while (x < size.width.toInt()) {
+                val y =
+                    centerY + amplitude * kotlin.math.cos(2 * PI * frequency * x / size.width + phase.value)
+                wavePath.lineTo(x.toFloat(), y.toFloat())
+                x++
+            }
+            wavePath.lineTo(x.toFloat(), centerY + amplitude)
+
+            drawPath(
+                path = wavePath,
+                color = Color.White,
+                alpha = alpha,
+                style = Fill
+            )
+        }
+    )
+}
+
+@Composable
+private fun rememberPhaseState(startPosition: Float): MutableState<Float> {
+    val step: Long = 100 //countdown seconds
+    val phase = remember { mutableStateOf(startPosition) }
+    LaunchedEffect(phase, step) {
+        while (NonCancellable.isActive) {
+            phase.value = phase.value + 0.02f
+            delay(step)
+        }
+    }
+    return phase
 }
 
 @Composable
@@ -486,7 +661,22 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
             val weatherCondition = when (temp.daily.weathercode[days]) {
                 in 0..2 -> WeatherCondition.SUNNY
                 3, 4 -> WeatherCondition.CLOUDY
-                in listOf(51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82) -> WeatherCondition.RAINY
+                in listOf(
+                    51,
+                    53,
+                    55,
+                    56,
+                    57,
+                    61,
+                    63,
+                    65,
+                    66,
+                    67,
+                    80,
+                    81,
+                    82
+                ) -> WeatherCondition.RAINY
+
                 in listOf(71, 73, 75, 77) -> WeatherCondition.SNOWY
                 else -> WeatherCondition.SUNNY // Set a default weather condition in case of an unknown code
             }
@@ -600,6 +790,7 @@ fun ExtraCards(
 
     }
 }
+
 @Composable
 fun TemperatureProgressBar(forecastMin: Int, forecastMax: Int, currentTemp: Int) {
     val minTemp = forecastMin.toFloat()
@@ -616,6 +807,7 @@ fun TemperatureProgressBar(forecastMin: Int, forecastMax: Int, currentTemp: Int)
         color = Spiro
     )
 }
+
 @Composable
 fun SunRiseAndSetProgress(temp: TemperatureResponse) {
     val now = LocalDateTime.now().toLocalTime()
@@ -628,17 +820,20 @@ fun SunRiseAndSetProgress(temp: TemperatureResponse) {
     } ?: LocalTime.MAX
 
     val progress = calculateProgress(now, sunriseTime, sunsetTime)
-    Row(modifier = Modifier
-        .fillMaxHeight()
-        .padding(vertical = 6.dp, horizontal = 50.dp),
+    Row(
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(vertical = 6.dp, horizontal = 50.dp),
         horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically) {
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         // ... (your existing Text and Icon elements)
 
         DrawHalfCircleProgress(progress)
 
     }
 }
+
 @Composable
 private fun DrawHalfCircleProgress(progress: Float) {
     Canvas(
@@ -668,8 +863,13 @@ private fun DrawHalfCircleProgress(progress: Float) {
 }
 
 @Composable
-private fun calculateProgress(currentTime: LocalTime, sunriseTime: LocalTime, sunsetTime: LocalTime): Float {
+private fun calculateProgress(
+    currentTime: LocalTime,
+    sunriseTime: LocalTime,
+    sunsetTime: LocalTime
+): Float {
     val totalMinutes = sunsetTime.toSecondOfDay().toFloat() - sunriseTime.toSecondOfDay().toFloat()
-    val elapsedMinutes = currentTime.toSecondOfDay().toFloat() - sunriseTime.toSecondOfDay().toFloat()
+    val elapsedMinutes =
+        currentTime.toSecondOfDay().toFloat() - sunriseTime.toSecondOfDay().toFloat()
     return (elapsedMinutes / totalMinutes).coerceIn(0f, 1f)
 }

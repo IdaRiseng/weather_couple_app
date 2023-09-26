@@ -26,6 +26,8 @@ val ButtonBlue = Color(0xFF1D71F2)
 val Tangerine = Color(0xFFFFCD00)
 val Northern = Color(0xFF04E2B7)
 val Pastel = Color(0xFFFF9B50)
+val Spir = Color(0xFF11C3FD)
+val ColdBlue = Color(0xFF107DAC)
 
 
 

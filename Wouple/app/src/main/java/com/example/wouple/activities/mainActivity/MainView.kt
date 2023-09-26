@@ -1,11 +1,14 @@
 package com.example.wouple.activities.mainActivity
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -26,6 +30,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ButtonElevation
 import androidx.compose.material.Card
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -43,10 +48,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Bottom
+import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterStart
+import androidx.compose.ui.Alignment.Companion.CenterVertically
+import androidx.compose.ui.Alignment.Companion.End
+import androidx.compose.ui.Alignment.Companion.Start
+import androidx.compose.ui.Alignment.Companion.TopCenter
+import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -61,14 +75,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.R
+import com.example.wouple.activities.detailActivity.Hours
+import com.example.wouple.activities.detailActivity.WeatherCondition
+import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.TemperatureResponse
+import com.example.wouple.ui.theme.ColdBlue
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark20
+import com.example.wouple.ui.theme.Orange
 import com.example.wouple.ui.theme.Pastel
+import com.example.wouple.ui.theme.Spir
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Whitehis
+import com.example.wouple.ui.theme.Yellow20
 import kotlinx.coroutines.NonCancellable.isActive
 import kotlinx.coroutines.delay
+import java.time.LocalTime
 import kotlin.math.PI
 
 
@@ -148,7 +170,7 @@ fun FirstCardView(
                     onClick = {
                         onDetailsButtonClicked(temp)
                     }) {
-                    Text(text = "Weather details")
+                    Text(text = "Forecast details")
                 }
                 /*  val pagerState = rememberPagerState()
                   HorizontalPager(state = pagerState, count = 2, modifier = Modifier)
@@ -188,7 +210,7 @@ fun FirstCardView(
                 .padding(top = 16.dp)
         ) {
 
-            TodayWeatherCard()
+            TodayWeatherCard(temp, onDetailsButtonClicked)
         }
         Box(
             modifier = Modifier
@@ -239,80 +261,95 @@ fun ExpandableCards(onDetailsButtonClicked: (TemperatureResponse) -> Unit) {
 }*/
 
 @Composable
-private fun TodayWeatherCard() {
+private fun TodayWeatherCard(
+    temp: TemperatureResponse,
+    onDetailsButtonClicked: (TemperatureResponse) -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         elevation = 4.dp,
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.snowshowers),
-            contentDescription = null, contentScale = ContentScale.Crop,
-        )
-
-        Text(
-            text = "Today's Weather",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(16.dp)
-        )
-        Column(
-            modifier = Modifier.padding(top = 40.dp),
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
         ) {
-            Row(
-                modifier = Modifier.align(CenterHorizontally)
+            Image(
+                painter = painterResource(id = R.drawable.snowshowers),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
             )
-            {
-                Text(
-                    text = "17°",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 32.sp,
-                    textAlign = TextAlign.Start,
-                )
-                Spacer(modifier = Modifier.padding(20.dp))
-                Text(
-                    text = "17°",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 32.sp,
-                    textAlign = TextAlign.Start,
-                )
-            }
             Text(
-                text = "Feels like: 18°",
-                fontWeight = FontWeight.Normal,
+                text = "Today's Summary",
+                fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
+                color = Color.Black,
                 modifier = Modifier
+                    .align(TopCenter)
+                    .padding(8.dp)
             )
+            CardInformation()
         }
     }
 }
 
-
 @Composable
-private fun HorizontalPagerIndicator(step: Int, totalSteps: Int) {
-
-    @Composable
-    fun Dot(isSelected: Boolean) {
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 4.dp, vertical = 16.dp)
-                .clip(CircleShape)
-                .background(Color.White)
-                .width(if (isSelected) 16.dp else 8.dp)
-                .height(8.dp)
-        )
+private fun CardInformation() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.Start
+    ) {
+        Row() {
+            Text(
+                text = "7°",
+                fontSize = 40.sp,
+                color = Color.Black
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.arrowdropdown), contentDescription = null,
+                modifier = Modifier
+                    .size(40.dp)
+                    .align(CenterVertically)
+            )
+        }
     }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(start = 8.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-        repeat(totalSteps) {
-            if (it == step) {
-                Dot(true)
-            } else {
-                Dot(false)
-            }
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.End
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End
+        )
+        {
+            Icon(
+                painter = painterResource(id = R.drawable.arrowdropup), contentDescription = null,
+                modifier = Modifier.size(40.dp)
+            )
+            Text(
+                text = "19°",
+                fontSize = 40.sp,
+                color = Color.Black
+            )
         }
     }
 }
@@ -380,11 +417,11 @@ fun ClickableCardDemo() {
             contentDescription = null, contentScale = ContentScale.Crop
         )
         Text(
-            text = "Thunderbolt Hunt",
+            text = "Lightning Hunt",
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(8.dp)
         )
 
     }
