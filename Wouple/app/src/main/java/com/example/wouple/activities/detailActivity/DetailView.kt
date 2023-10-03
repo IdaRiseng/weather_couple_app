@@ -27,6 +27,14 @@ import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.BottomCenter
+import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterEnd
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterStart
+import androidx.compose.ui.Alignment.Companion.CenterVertically
+import androidx.compose.ui.Alignment.Companion.End
+import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
@@ -42,11 +50,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.R
 import com.example.wouple.elements.HorizontalWave
+import com.example.wouple.elements.SunRiseAndSetProgress
 import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark20
+import com.example.wouple.ui.theme.Orange
+import com.example.wouple.ui.theme.PagerColor
+import com.example.wouple.ui.theme.Red
+import com.example.wouple.ui.theme.Spir
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Tangerine
 import com.example.wouple.ui.theme.Whitehis
@@ -54,6 +67,8 @@ import com.example.wouple.ui.theme.Yellow20
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import java.nio.file.WatchEvent
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -155,8 +170,8 @@ private fun HorizontalPagerIndicator(step: Int, totalSteps: Int) {
             modifier = Modifier
                 .padding(horizontal = 4.dp, vertical = 16.dp)
                 .clip(CircleShape)
-                .background(Color.White)
-                .width(if (isSelected) 16.dp else 8.dp)
+                .background(PagerColor)
+                .width(if (isSelected) 14.dp else 8.dp)
                 .height(8.dp)
         )
     }
@@ -181,7 +196,7 @@ fun LocationView(temp: TemperatureResponse) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "OSLO",
+            text = "SILIFKE",
             fontSize = 50.sp,
             color = Color.Black,
         )
@@ -222,7 +237,6 @@ fun LocationView(temp: TemperatureResponse) {
         )
         val weatherCode = temp.current_weather.weathercode
         val weatherDescription = weatherDescriptions[weatherCode] ?: "Unknown"
-
         Text(
             text = weatherDescription,
             color = Color.Black,
@@ -313,99 +327,109 @@ fun SunRise(temp: TemperatureResponse) {
         LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             .format(DateTimeFormatter.ofPattern("HH:mm"))
     } ?: ""
-
-    Row(
-        modifier = Modifier
-            .padding(vertical = 6.dp, horizontal = 22.dp)
-            .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
-            .background(Dark20)
-            .padding(6.dp),
-        horizontalArrangement = Arrangement.Start
+    Column(
+        modifier = Modifier,
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Top
     ) {
-
         Text(
-            modifier = Modifier.padding(start = 10.dp),
-            text = "Sunrise",
-            fontSize = 16.sp,
-            color = Spiro
+            modifier = Modifier,
+            text = formattedSunrise,
+            fontWeight = FontWeight.Thin,
+            fontSize = 30.sp,
+            color = Corn,
         )
-        todaySunrise?.let {
-            Text(
-                modifier = Modifier.padding(start = 10.dp),
-                text = formattedSunrise,
-                fontSize = 16.sp,
-                color = Corn
-            )
-        }
-
-        Icon(
-            painter = painterResource(id = R.drawable.sunrise),
-            contentDescription = null,
-            modifier = Modifier.padding(start = 4.dp),
-            tint = Tangerine
-        )
-
-
     }
 }
 
 @Composable
 fun SunSet(temp: TemperatureResponse) {
     val now = LocalDateTime.now().toLocalDate()
-    val todaySunrise = temp.daily.sunset.firstOrNull {
+    val todaySunSet = temp.daily.sunset.firstOrNull {
         LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             .toLocalDate()
             .isEqual(now)
     }
 
-    val formattedSunset = todaySunrise?.let {
+    val formattedSunset = todaySunSet?.let {
         LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             .format(DateTimeFormatter.ofPattern("HH:mm"))
     } ?: ""
-    Row(
-        modifier = Modifier
-            .padding(vertical = 6.dp, horizontal = 2.dp)
-            .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
-            .background(Dark20)
-            .padding(6.dp),
-        horizontalArrangement = Arrangement.End
+    Column(
+        modifier = Modifier,
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.Top
     ) {
-
         Text(
-            modifier = Modifier.padding(start = 10.dp),
-            text = "Sunset",
-            fontSize = 16.sp,
-            color = Spiro
-        )
-        Text(
-            modifier = Modifier.padding(start = 10.dp),
+            modifier = Modifier,
             text = formattedSunset,
-            fontSize = 16.sp,
-            color = Corn
+            fontWeight = FontWeight.Thin,
+            fontSize = 30.sp,
+            color = Corn,
         )
-        Icon(
-            painter = painterResource(id = R.drawable.sunrise), contentDescription = null,
-            modifier = Modifier.padding(start = 4.dp), tint = Tangerine
-        )
-
-
+    }
+}
+@Composable
+fun DayLength(temp: TemperatureResponse) {
+    val now = LocalDateTime.now().toLocalDate()
+    val todaySunrise = temp.daily.sunrise.firstOrNull {
+        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            .toLocalDate()
+            .isEqual(now)
     }
 
+    val todaySunset = temp.daily.sunset.firstOrNull {
+        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            .toLocalDate()
+            .isEqual(now)
+    }
+
+    val formatter = DateTimeFormatter.ofPattern("HH:mm")
+
+    val formattedSunrise = todaySunrise?.let {
+        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            .format(formatter)
+    } ?: ""
+
+    val formattedSunset = todaySunset?.let {
+        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            .format(formatter)
+    } ?: ""
+
+    val lengthOfTheDay = if (formattedSunrise.isNotEmpty() && formattedSunset.isNotEmpty()) {
+        val sunriseTime = LocalTime.parse(formattedSunrise, formatter)
+        val sunsetTime = LocalTime.parse(formattedSunset, formatter)
+        val length = Duration.between(sunriseTime, sunsetTime)
+        val hours = length.toHours()
+        val minutes = length.minusHours(hours).toMinutes()
+        "$hours hours $minutes minutes"
+    } else {
+        "N/A"
+    }
+
+    Column(
+        modifier = Modifier,
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            modifier = Modifier,
+            text = "Day Length",
+            fontWeight = FontWeight.Thin,
+            fontSize = 30.sp,
+            color = Color.White,
+        )
+        Text(
+            modifier = Modifier.align(End),
+            text = lengthOfTheDay,
+            fontSize = 16.sp,
+            color = Whitehis,
+        )
+    }
 }
 
 @Composable
 private fun SunsetSunriseCard(temp: TemperatureResponse) {
-    val now = LocalDateTime.now().toLocalDate()
-    val todaySunrise = temp.daily.sunset.firstOrNull {
-        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-            .toLocalDate()
-            .isEqual(now)
-    }
-
-    val formattedSunset = todaySunrise?.let {
-        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-            .format(DateTimeFormatter.ofPattern("HH:mm"))
-    } ?: ""
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -416,94 +440,65 @@ private fun SunsetSunriseCard(temp: TemperatureResponse) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
+                .height(160.dp)
                 .background(Dark20),
+            contentAlignment = BottomCenter
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-                    .background(Dark20),
-                contentAlignment = Alignment.BottomCenter // Align the waves to the bottom center
-            ) {
             HorizontalWave(
                 phase = rememberPhaseState(startPosition = 10f),
                 alpha = 0.2f,
-                amplitude = 50f ,
+                amplitude = 50f,
                 frequency = 0.5f
             )
             HorizontalWave(
                 phase = rememberPhaseState(startPosition = 15f),
                 alpha = 0.3f,
-                amplitude = 80f ,
+                amplitude = 80f,
                 frequency = 0.4f
             )
             HorizontalWave(
                 phase = rememberPhaseState(20f),
                 alpha = 0.2f,
-                amplitude = 50f,
+                amplitude = 60f,
                 frequency = 0.4f
             )
-            }
-            Row(modifier = Modifier
-                .align(Alignment.Center)
-                .padding(16.dp)) {
-
-            Icon(
-                painter = painterResource(id = R.drawable.arrowdropup), contentDescription = null,
-                modifier = Modifier
-                    .size(40.dp), tint = Whitehis
-            )
-           Icon(
-                painter = painterResource(id = R.drawable.sun), contentDescription = null,
-                modifier = Modifier
-                    .size(50.dp), tint = Yellow20
-            )
-                Icon(
-                    painter = painterResource(id = R.drawable.arrowdropdown), contentDescription = null,
-                    modifier = Modifier
-                        .size(40.dp), tint = Whitehis
-                )
-            }
-            Column(modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Top) {
-                Text(
-                    modifier = Modifier.padding(start = 16.dp),
-                    text = "Sunrise",
-                    fontSize = 16.sp,
-                    color = Spiro,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.padding(4.dp))
-                Text(
-                    modifier = Modifier.padding(start = 8.dp),
-                    text = formattedSunset,
-                    fontSize = 32.sp,
-                    color = Corn,
-                )
-            }
-          /*   Row(
-                modifier = Modifier
-                    .padding(vertical = 6.dp, horizontal = 2.dp)
-                    .background(Dark20)
-                    .padding(6.dp),
+        }
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.padding(start = 8.dp)
             ) {
-                Text(
-                    modifier = Modifier.padding(start = 10.dp),
-                    text = "Sunset",
-                    fontSize = 16.sp,
-                    color = Spiro
-                )
-                Text(
-                    modifier = Modifier.padding(bottom = 30.dp),
-                    text = formattedSunset,
-                    fontSize = 16.sp,
-                    color = Corn
-                )
-
-
-            }*/
+                SunRise(temp)
+                Row() {
+                    Icon(
+                        painter = painterResource(id = R.drawable.arrowdropup),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(30.dp),
+                        tint = Whitehis.copy(alpha = 0.9f),
+                    )
+                    Icon(
+                        painter = painterResource(id = R.drawable.arrowdropdown),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(30.dp),
+                        tint = Whitehis.copy(alpha = 0.8f),
+                    )
+                }
+                SunSet(temp)
+            }
+            Spacer(modifier = Modifier.padding(18.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.sunforicon), contentDescription = null,
+                modifier = Modifier
+                    .size(70.dp),
+                tint = Yellow20,
+            )
+            Spacer(modifier = Modifier.padding(18.dp))
+            DayLength(temp)
         }
     }
 }
@@ -543,7 +538,7 @@ enum class WeatherCondition(val imageResourceId: Int) {
     SNOWY(R.drawable.cloudsnow),
     NIGHT(R.drawable.halfmoonblue),
     RAINYNIGHT(R.drawable.rainynight)
-    // Add more weather conditions and their associated images as needed
+    // Adds weather conditions and their associated images
 }
 
 @Composable
@@ -574,19 +569,23 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
                 text = "WEEKLY FORECAST",
                 color = Corn
             )
-            Text(
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(
+                painter = painterResource(id = R.drawable.arrowdropdown),
+                contentDescription = null,
+                tint = Spir.copy(alpha = 0.9f),
                 modifier = Modifier
-                    .padding(start = 40.dp),
-                text = "Min",
-                color = Spiro.copy(alpha = 0.9f),
-                textAlign = TextAlign.End,
+                    .padding(start = 16.dp, end = 16.dp)
+                    .size(30.dp)
             )
-            Text(
+
+            Icon(
+                painter = painterResource(id = R.drawable.arrowdropup),
+                contentDescription = null,
+                tint = Spir,
                 modifier = Modifier
-                    .padding(start = 50.dp),
-                text = "Max",
-                color = Spiro,
-                textAlign = TextAlign.End,
+                    .padding(start = 16.dp, end = 16.dp)
+                    .size(30.dp)
             )
 
 
@@ -667,7 +666,7 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
                         )
                 }
                 Divider(
-                    color = Spiro.copy(alpha = 0.5f),
+                    color = Color.Gray.copy(alpha = 0.5f),
                     thickness = 1.dp,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 )
@@ -732,89 +731,18 @@ fun ExtraCards(
             color = Whitehis,
             fontSize = 16.sp
         )
-
-    }
-}
-
-@Composable
-fun TemperatureProgressBar(forecastMin: Int, forecastMax: Int, currentTemp: Int) {
-    val minTemp = forecastMin.toFloat()
-    val maxTemp = forecastMax.toFloat()
-    val currentTempValue = currentTemp.toFloat()
-
-    val progress = (currentTempValue - minTemp) / (maxTemp - minTemp)
-
-    LinearProgressIndicator(
-        progress = progress,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        color = Spiro
-    )
-}
-
-@Composable
-fun SunRiseAndSetProgress(temp: TemperatureResponse) {
-    val now = LocalDateTime.now().toLocalTime()
-    val sunriseTime = temp.daily.sunrise.firstOrNull()?.let {
-        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME).toLocalTime()
-    } ?: LocalTime.MIDNIGHT
-
-    val sunsetTime = temp.daily.sunset.firstOrNull()?.let {
-        LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME).toLocalTime()
-    } ?: LocalTime.MAX
-
-    val progress = calculateProgress(now, sunriseTime, sunsetTime)
-    Row(
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(vertical = 6.dp, horizontal = 50.dp),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // ... (your existing Text and Icon elements)
-
-        DrawHalfCircleProgress(progress)
-
-    }
-}
-
-@Composable
-private fun DrawHalfCircleProgress(progress: Float) {
-    Canvas(
-        modifier = Modifier
-            .size(300.dp)
-            .padding(2.dp)
-            .fillMaxSize(1f)
-    ) {
-        // Draw the background half-circle
-        drawArc(
-            color = Color.Gray,
-            startAngle = 180f,
-            sweepAngle = 180f,
-            useCenter = false,
-            style = Stroke(8.dp.toPx())
+        HorizontalWave(
+            phase = rememberPhaseState(10f),
+            alpha = 0.3f,
+            amplitude = 80f,
+            frequency = 0.6f
+        )
+        HorizontalWave(
+            phase = rememberPhaseState(startPosition = 15f),
+            alpha = 0.2f,
+            amplitude = 60f,
+            frequency = 0.4f
         )
 
-        // Draw the progress half-circle
-        drawArc(
-            color = Spiro,
-            startAngle = 180f,
-            sweepAngle = 180f * progress,
-            useCenter = false,
-            style = Stroke(8.dp.toPx())
-        )
     }
-}
-
-@Composable
-private fun calculateProgress(
-    currentTime: LocalTime,
-    sunriseTime: LocalTime,
-    sunsetTime: LocalTime
-): Float {
-    val totalMinutes = sunsetTime.toSecondOfDay().toFloat() - sunriseTime.toSecondOfDay().toFloat()
-    val elapsedMinutes =
-        currentTime.toSecondOfDay().toFloat() - sunriseTime.toSecondOfDay().toFloat()
-    return (elapsedMinutes / totalMinutes).coerceIn(0f, 1f)
 }

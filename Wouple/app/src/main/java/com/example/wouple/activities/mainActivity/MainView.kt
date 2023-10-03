@@ -30,6 +30,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ButtonElevation
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -47,14 +48,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Bottom
-import androidx.compose.ui.Alignment.Companion.Center
-import androidx.compose.ui.Alignment.Companion.CenterEnd
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.Alignment.Companion.CenterStart
+import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.CenterVertically
-import androidx.compose.ui.Alignment.Companion.End
-import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
@@ -68,6 +63,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -77,6 +74,7 @@ import androidx.compose.ui.unit.sp
 import com.example.wouple.R
 import com.example.wouple.activities.detailActivity.Hours
 import com.example.wouple.activities.detailActivity.WeatherCondition
+import com.example.wouple.elements.GetWeatherCodes
 import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.formatter.DateFormatter
@@ -84,16 +82,8 @@ import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.ColdBlue
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark20
-import com.example.wouple.ui.theme.Orange
-import com.example.wouple.ui.theme.Pastel
-import com.example.wouple.ui.theme.Spir
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Whitehis
-import com.example.wouple.ui.theme.Yellow20
-import kotlinx.coroutines.NonCancellable.isActive
-import kotlinx.coroutines.delay
-import java.time.LocalTime
-import kotlin.math.PI
 
 
 /*@Preview(showBackground = true)
@@ -152,14 +142,15 @@ fun FirstCardView(
                     modifier = Modifier
                         .padding(start = 16.dp),
                     text = "17°",
+                    fontWeight = FontWeight.Thin,
                     fontSize = 80.sp,
                     color = Color.White,
                 )
                 Text(
-                    text = "NEW YORK",
+                    text = "SILIFKE",
+                    fontWeight = FontWeight.Thin,
                     fontSize = 50.sp,
                     color = Color.White,
-                    fontWeight = FontWeight.Bold
                 )
                 Image(
                     painter = painterResource(id = R.drawable.sun), contentDescription = null,
@@ -211,7 +202,6 @@ fun FirstCardView(
                 .background(Color.White)
                 .padding(top = 16.dp)
         ) {
-
             TodayWeatherCard(temp, onDetailsButtonClicked)
         }
         Box(
@@ -220,11 +210,12 @@ fun FirstCardView(
                 .background(Color.White)
                 .padding(bottom = 16.dp)
         ) {
-            ClickableCardDemo()
+           ClickableCardDemo()
         }
     }
 }
-/*@Composable
+/*
+@Composable
 fun ExpandableCards(onDetailsButtonClicked: (TemperatureResponse) -> Unit) {
     var isCard1Expanded by remember { mutableStateOf(false) }
     var isCard2Expanded by remember { mutableStateOf(false) }
@@ -260,8 +251,8 @@ fun ExpandableCards(onDetailsButtonClicked: (TemperatureResponse) -> Unit) {
             }
         )
     }
-}*/
-
+}
+*/
 @Composable
 private fun TodayWeatherCard(
     temp: TemperatureResponse,
@@ -294,13 +285,14 @@ private fun TodayWeatherCard(
                     .align(TopCenter)
                     .padding(8.dp)
             )
-            CardInformation()
+            CardInformation(temp)
         }
     }
 }
 
 @Composable
-private fun CardInformation() {
+private fun CardInformation(temp: TemperatureResponse) {
+   val weatherDesc = GetWeatherCodes(temp)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -309,27 +301,36 @@ private fun CardInformation() {
         horizontalAlignment = Alignment.Start
     ) {
         Row() {
+            val day = 0
+            val forcastMini = temp.daily.temperature_2m_min[day].toInt().toString()
+
             Text(
-                text = "7°",
-                fontSize = 40.sp,
+                text = forcastMini + temp.daily_units.temperature_2m_min[0],
+                fontWeight = FontWeight.Thin,
+                fontSize = 36.sp,
                 color = Color.Black
             )
             Icon(
                 painter = painterResource(id = R.drawable.arrowdropdown), contentDescription = null,
                 modifier = Modifier
                     .size(40.dp)
-                    .align(CenterVertically)
+                    .align(CenterVertically), tint = Dark20.copy(alpha = 0.8f)
             )
         }
     }
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 8.dp),
+            .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
+        Text(
+            modifier = Modifier.padding(end = 8.dp),
+            text = weatherDesc,
+            fontSize = 24.sp,
+            color = Color.Black
+        )
     }
     Column(
         modifier = Modifier
@@ -343,13 +344,16 @@ private fun CardInformation() {
             horizontalArrangement = Arrangement.End
         )
         {
+            val day = 0
+            val maximumDegree = temp.daily.temperature_2m_max[day].toInt().toString()
             Icon(
                 painter = painterResource(id = R.drawable.arrowdropup), contentDescription = null,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(40.dp), tint = Dark20
             )
             Text(
-                text = "19°",
-                fontSize = 40.sp,
+                text = maximumDegree + temp.daily_units.temperature_2m_max[0],
+                fontWeight = FontWeight.Thin,
+                fontSize = 36.sp,
                 color = Color.Black
             )
         }
