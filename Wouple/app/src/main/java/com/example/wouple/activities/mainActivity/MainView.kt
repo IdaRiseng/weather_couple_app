@@ -112,6 +112,7 @@ fun FirstCardView(
     onSearch: (String) -> Unit,
     onDetailsButtonClicked: (TemperatureResponse) -> Unit
 ) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -141,7 +142,7 @@ fun FirstCardView(
                 Text(
                     modifier = Modifier
                         .padding(start = 16.dp),
-                    text = "17°",
+                    text = temp.current_weather.temperature.toInt().toString() + temp.hourly_units.temperature_2m[0],
                     fontWeight = FontWeight.Thin,
                     fontSize = 80.sp,
                     color = Color.White,
@@ -419,7 +420,7 @@ fun ClickableCardDemo() {
     ) {
         // Card content goes here
         Image(
-            painter = painterResource(id = R.drawable.drizzle),
+            painter = painterResource(id = R.drawable.map),
             contentDescription = null, contentScale = ContentScale.Crop
         )
         Text(
@@ -436,9 +437,9 @@ fun ClickableCardDemo() {
 
 @Composable
 fun SearchBar() {
-    var searchText by remember { mutableStateOf("") }
     var isSearchExpanded by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
+    var query by remember { mutableStateOf("") }
 
     Row(
         modifier = Modifier
@@ -457,8 +458,8 @@ fun SearchBar() {
             exit = slideOutHorizontally(targetOffsetX = { -it })
         ) {
             TextField(
-                value = searchText,
-                onValueChange = { searchText = it.uppercase() },
+                value = query,
+                onValueChange = { query = it },
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 18.dp),
@@ -496,7 +497,7 @@ fun SearchBar() {
             onClick = {
                 isSearchExpanded = !isSearchExpanded
                 if (!isSearchExpanded) {
-                    searchText = ""
+                    query = ""
                 }
             },
             modifier = Modifier
