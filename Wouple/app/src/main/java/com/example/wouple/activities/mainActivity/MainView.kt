@@ -83,24 +83,6 @@ fun DefaultPreview() {
 }*/
 
 @Composable
-fun NoTemperatureView(
-    locations: List<SearchedLocations>?,
-    onSearch: (String) -> Unit,
-    onLocationButtonClicked: (SearchedLocations) -> Unit,
-) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        SearchBar(onSearch)
-        locations?.forEach { location ->
-            Button(onClick = {
-                onLocationButtonClicked(location)
-            }) {
-                Text(text = location.display_name)
-            }
-        }
-    }
-}
-
-@Composable
 fun FirstCardView(
     temp: TemperatureResponse,
     locations: List<SearchedLocations>?,
