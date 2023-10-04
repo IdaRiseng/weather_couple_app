@@ -1,37 +1,27 @@
 package com.example.wouple.activities.mainActivity
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.ButtonElevation
 import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -41,30 +31,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Alignment.Companion.TopCenter
-import androidx.compose.ui.Alignment.Companion.TopStart
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -72,15 +52,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.R
-import com.example.wouple.activities.detailActivity.Hours
-import com.example.wouple.activities.detailActivity.WeatherCondition
 import com.example.wouple.elements.GetWeatherCodes
 import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
-import com.example.wouple.formatter.DateFormatter
+import com.example.wouple.model.api.SearchedLocations
 import com.example.wouple.model.api.TemperatureResponse
-import com.example.wouple.ui.theme.ColdBlue
-import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark20
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Whitehis
@@ -105,14 +81,34 @@ fun DefaultPreview() {
         FirstCardView(temperature, temperature)
     }
 }*/
+
+@Composable
+fun NoTemperatureView(
+    locations: List<SearchedLocations>?,
+    onSearch: (String) -> Unit,
+    onLocationButtonClicked: (SearchedLocations) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        SearchBar(onSearch)
+        locations?.forEach { location ->
+            Button(onClick = {
+                onLocationButtonClicked(location)
+            }) {
+                Text(text = location.display_name)
+            }
+        }
+    }
+}
+
 @Composable
 fun FirstCardView(
     temp: TemperatureResponse,
-    temp2: TemperatureResponse,
+    locations: List<SearchedLocations>?,
     onSearch: (String) -> Unit,
+    onLocationButtonClicked: (SearchedLocations) -> Unit,
     onDetailsButtonClicked: (TemperatureResponse) -> Unit
 ) {
-
+    var searchedLocation by remember { mutableStateOf<SearchedLocations?>(null) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -134,7 +130,7 @@ fun FirstCardView(
         ) {
             Column(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
+                    .align(TopCenter)
                     .padding(top = 50.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
@@ -148,7 +144,7 @@ fun FirstCardView(
                     color = Color.White,
                 )
                 Text(
-                    text = "SILIFKE",
+                    text = getProperDisplayName(searchedLocation?.display_name) ?: "dafaq u searching for",
                     fontWeight = FontWeight.Thin,
                     fontSize = 50.sp,
                     color = Color.White,
@@ -176,7 +172,15 @@ fun FirstCardView(
                   }*/
             }
             Column(modifier = Modifier.fillMaxSize()) {
-                SearchBar()
+                SearchBar(onSearch)
+                locations?.forEach { location ->
+                    Button(onClick = {
+                        searchedLocation = location
+                        onLocationButtonClicked(location)
+                    }) {
+                        Text(text = location.display_name)
+                    }
+                }
             }
             HorizontalWave(
                 phase = rememberPhaseState(0f),
@@ -211,10 +215,14 @@ fun FirstCardView(
                 .background(Color.White)
                 .padding(bottom = 16.dp)
         ) {
-           ClickableCardDemo()
+            ClickableCardDemo()
         }
     }
 }
+
+private fun getProperDisplayName(displayName: String?) = displayName?.split(",")?.firstOrNull()
+
+
 /*
 @Composable
 fun ExpandableCards(onDetailsButtonClicked: (TemperatureResponse) -> Unit) {
@@ -293,7 +301,7 @@ private fun TodayWeatherCard(
 
 @Composable
 private fun CardInformation(temp: TemperatureResponse) {
-   val weatherDesc = GetWeatherCodes(temp)
+    val weatherDesc = GetWeatherCodes(temp)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -436,7 +444,7 @@ fun ClickableCardDemo() {
 
 
 @Composable
-fun SearchBar() {
+fun SearchBar(onSearch: (String) -> Unit) {
     var isSearchExpanded by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     var query by remember { mutableStateOf("") }
@@ -449,7 +457,7 @@ fun SearchBar() {
                 color = if (isSearchExpanded) Color.White else Color.Transparent,
                 shape = RoundedCornerShape(28.dp)
             ),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
         AnimatedVisibility(
@@ -459,7 +467,12 @@ fun SearchBar() {
         ) {
             TextField(
                 value = query,
-                onValueChange = { query = it },
+                onValueChange = {
+                    query = it
+                    if (query.length >= 3) {
+                        onSearch(query)
+                    }
+                },
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 18.dp),
