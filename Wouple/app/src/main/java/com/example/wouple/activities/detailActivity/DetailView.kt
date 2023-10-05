@@ -53,6 +53,7 @@ import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.SunRiseAndSetProgress
 import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.formatter.DateFormatter
+import com.example.wouple.model.api.SearchedLocations
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark20
@@ -188,7 +189,9 @@ private fun HorizontalPagerIndicator(step: Int, totalSteps: Int) {
 }
 
 @Composable
-fun LocationView(temp: TemperatureResponse) {
+fun LocationView(
+    temp: TemperatureResponse,
+) {
     Column(
         modifier = Modifier
             .padding(top = 40.dp, bottom = 20.dp)
@@ -196,7 +199,7 @@ fun LocationView(temp: TemperatureResponse) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "SILIFKE",
+            text = "",
             fontSize = 50.sp,
             color = Color.Black,
         )
@@ -244,7 +247,6 @@ fun LocationView(temp: TemperatureResponse) {
         )
     }
 }
-
 @Composable
 fun HourlyForecastView(temp: TemperatureResponse) {
     val scrollState = rememberScrollState()

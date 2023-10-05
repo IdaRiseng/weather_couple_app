@@ -94,13 +94,6 @@ fun FirstCardView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-        /* .paint(
-             when (temp1.current_weather.is_day) {
-                 1 -> painterResource(id = R.drawable.sky)
-                 else -> return
-             },
-             contentScale = ContentScale.None
-         ),*/
     ) {
         Box(
             modifier = Modifier
@@ -119,14 +112,14 @@ fun FirstCardView(
             ) {
                 Text(
                     modifier = Modifier
-                        .padding(start = 16.dp),
+                        .padding(start = 16.dp, top = 8.dp),
                     text = temp.current_weather.temperature.toInt().toString() + temp.hourly_units.temperature_2m[0],
                     fontWeight = FontWeight.Thin,
-                    fontSize = 80.sp,
+                    fontSize = 70.sp,
                     color = Color.White,
                 )
                 Text(
-                    text = getProperDisplayName(searchedLocation?.display_name) ?: "dafaq u searching for",
+                    text = getProperDisplayName(searchedLocation?.display_name) ?: "N/D",
                     fontWeight = FontWeight.Thin,
                     fontSize = 50.sp,
                     color = Color.White,
@@ -144,14 +137,6 @@ fun FirstCardView(
                     }) {
                     Text(text = "Forecast details")
                 }
-                /*  val pagerState = rememberPagerState()
-                  HorizontalPager(state = pagerState, count = 2, modifier = Modifier)
-                  { page ->
-                      when (page) {
-                          0 -> TildeScreen(temp = temp1,onDetailsButtonClicked )
-                          1 -> TildeScreen(temp = temp2, onDetailsButtonClicked)
-                      }
-                  }*/
             }
             Column(modifier = Modifier.fillMaxSize()) {
                 SearchBar(onSearch)
