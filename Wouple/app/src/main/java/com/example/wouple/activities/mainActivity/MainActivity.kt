@@ -14,6 +14,7 @@ import com.example.wouple.manager.WeatherManager.getCurrentWeather
 import com.example.wouple.manager.WeatherManager.getSearchedLocations
 import com.example.wouple.model.api.SearchedLocations
 import com.example.wouple.model.api.TemperatureResponse
+import com.example.wouple.preferences.LocationPref
 import com.example.wouple.ui.theme.WoupleTheme
 import com.google.gson.Gson
 
@@ -21,6 +22,7 @@ class MainActivity : ComponentActivity() {
 
     private val temp: MutableState<TemperatureResponse?> = mutableStateOf(null)
     private val searchedLocations: MutableState<List<SearchedLocations>?> = mutableStateOf(null)
+    private val searchedLocation: MutableState<SearchedLocations?> = mutableStateOf(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +51,7 @@ class MainActivity : ComponentActivity() {
                         onLocationButtonClicked = { location ->
                             onLocationButtonClicked(location)
                         },
+                        searchedLocation = searchedLocation,
                         onSearch = { query ->
                             getSearchedLocations(
                                 context = this,
@@ -66,14 +69,9 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     private fun onLocationButtonClicked(location: SearchedLocations) {
-        val gson= Gson()
-        val json = gson.toJson(location)
-        val sharedPref = this.getSharedPreferences("preferences", Context.MODE_PRIVATE) ?: return
-        with(sharedPref.edit()){
-            putString("locationKey", json)
-            apply()
-        }
+        LocationPref.setSearchedLocation(this, location)
         getCurrentWeather(
             context = this,
             location = location,
@@ -87,13 +85,10 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("SuspiciousIndentation")
     override fun onResume() {
         super.onResume()
-        val sharedPref = this.getSharedPreferences("preferences", Context.MODE_PRIVATE) ?: return
-        val gson = Gson()
-        val json = sharedPref.getString("locationKey", "")
-       val location =  gson.fromJson(json, SearchedLocations::class.java)
-         getCurrentWeather(this, location) {
+        searchedLocation.value = LocationPref.getSearchedLocation(this)
+        getCurrentWeather(this, searchedLocation.value) {
             temp.value = it
-         }
+        }
     }
 }
 

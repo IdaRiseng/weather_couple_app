@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -94,11 +95,10 @@ fun FirstCardView(
     temp: TemperatureResponse,
     locations: List<SearchedLocations>?,
     onSearch: (String) -> Unit,
+    searchedLocation: MutableState<SearchedLocations?>,
     onLocationButtonClicked: (SearchedLocations) -> Unit,
     onDetailsButtonClicked: (TemperatureResponse) -> Unit
 ) {
-    var searchedLocation by remember { mutableStateOf<SearchedLocations?>(null) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -128,7 +128,7 @@ fun FirstCardView(
                     color = Color.White,
                 )
                 Text(
-                    text = getProperDisplayName(searchedLocation?.display_name) ?: "N/D",
+                    text = getProperDisplayName(searchedLocation.value?.display_name) ?: "N/D",
                     fontWeight = FontWeight.Thin,
                     fontSize = 50.sp,
                     color = Color.White,
@@ -153,7 +153,7 @@ fun FirstCardView(
                     ) {
                         locations?.sortedBy { it.display_name }?.forEach { location ->
                             Button(onClick = {
-                                searchedLocation = location
+                                searchedLocation.value = location
                                 onLocationButtonClicked(location)
                             }) {
                                 Text(text = location.display_name)
