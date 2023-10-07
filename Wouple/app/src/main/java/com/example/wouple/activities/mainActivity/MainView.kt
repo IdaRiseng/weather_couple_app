@@ -98,7 +98,7 @@ fun FirstCardView(
     onDetailsButtonClicked: (TemperatureResponse) -> Unit
 ) {
     var searchedLocation by remember { mutableStateOf<SearchedLocations?>(null) }
-    var locati = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -121,7 +121,8 @@ fun FirstCardView(
                 Text(
                     modifier = Modifier
                         .padding(start = 16.dp, top = 8.dp),
-                    text = temp.current_weather.temperature.toInt().toString() + temp.hourly_units.temperature_2m[0],
+                    text = temp.current_weather.temperature.toInt()
+                        .toString() + temp.hourly_units.temperature_2m[0],
                     fontWeight = FontWeight.Thin,
                     fontSize = 70.sp,
                     color = Color.White,
@@ -137,30 +138,34 @@ fun FirstCardView(
                     modifier = Modifier.size(60.dp), alignment = Alignment.BottomEnd
                 )
             }
-            LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 8.dp)) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
                 item {
-                SearchBar(onSearch)}
+                    SearchBar(onSearch)
+                }
                 items(locations ?: emptyList()) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
                     ) {
-                locations?.sortedBy { it.display_name }?.forEach { location ->
-                    Button(onClick = {
-                        searchedLocation = location
-                        onLocationButtonClicked(location)
-                    }) {
-                        Text(text = location.display_name)
+                        locations?.sortedBy { it.display_name }?.forEach { location ->
+                            Button(onClick = {
+                                searchedLocation = location
+                                onLocationButtonClicked(location)
+                            }) {
+                                Text(text = location.display_name)
+                            }
+                            Divider(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = Color.Gray,
+                                thickness = 1.dp
+                            )
+                        }
                     }
-                    Divider(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = Color.Gray,
-                        thickness = 1.dp
-                    )
                 }
-            }
-            }
             }
             HorizontalWave(
                 phase = rememberPhaseState(0f),
@@ -199,7 +204,9 @@ fun FirstCardView(
         }
     }
 }
+
 private fun getProperDisplayName(displayName: String?) = displayName?.split(",")?.firstOrNull()
+
 @Composable
 private fun TodayWeatherCard(
     temp: TemperatureResponse,
@@ -234,14 +241,16 @@ private fun TodayWeatherCard(
             )
             CardInformation(temp)
             Button(
-                modifier = Modifier.padding(top = 8.dp, bottom = 16.dp).align(BottomEnd),
+                modifier = Modifier
+                    .padding(top = 8.dp, bottom = 16.dp)
+                    .align(BottomEnd),
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(Whitehis),
                 onClick = {
                     onDetailsButtonClicked(temp)
                 }) {
                 Text(text = "Forecast details")
-        }
+            }
         }
     }
 }
@@ -315,6 +324,7 @@ private fun CardInformation(temp: TemperatureResponse) {
         }
     }
 }
+
 @Composable
 fun ClickableCardDemo() {
     Card(

@@ -1,6 +1,8 @@
 package com.example.wouple.activities.mainActivity
 
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,6 +15,7 @@ import com.example.wouple.manager.WeatherManager.getSearchedLocations
 import com.example.wouple.model.api.SearchedLocations
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.WoupleTheme
+import com.google.gson.Gson
 
 class MainActivity : ComponentActivity() {
 
@@ -28,14 +31,7 @@ class MainActivity : ComponentActivity() {
                     NoTemperatureView(
                         locations = searchedLocations.value,
                         onLocationButtonClicked = { location ->
-                            getCurrentWeather(
-                                context = this,
-                                location = location,
-                                onSuccessCall = { temperature ->
-                                    temp.value = temperature
-                                }
-                            )
-                            searchedLocations.value = null
+                            onLocationButtonClicked(location)
                         },
                         onSearch = { query ->
                             getSearchedLocations(
@@ -51,14 +47,7 @@ class MainActivity : ComponentActivity() {
                         temp = temp.value!!,
                         locations = searchedLocations.value,
                         onLocationButtonClicked = { location ->
-                            getCurrentWeather(
-                                context = this,
-                                location = location,
-                                onSuccessCall = { temperature ->
-                                    temp.value = temperature
-                                }
-                            )
-                            searchedLocations.value = null
+                            onLocationButtonClicked(location)
                         },
                         onSearch = { query ->
                             getSearchedLocations(
@@ -77,12 +66,34 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    private fun onLocationButtonClicked(location: SearchedLocations) {
+        val gson= Gson()
+        val json = gson.toJson(location)
+        val sharedPref = this.getSharedPreferences("preferences", Context.MODE_PRIVATE) ?: return
+        with(sharedPref.edit()){
+            putString("locationKey", json)
+            apply()
+        }
+        getCurrentWeather(
+            context = this,
+            location = location,
+            onSuccessCall = { temperature ->
+                temp.value = temperature
+            }
+        )
+        searchedLocations.value = null
+    }
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onResume() {
         super.onResume()
-        // getCurrentWeather(this) {
-        //     temp.value = it
-        // }
+        val sharedPref = this.getSharedPreferences("preferences", Context.MODE_PRIVATE) ?: return
+        val gson = Gson()
+        val json = sharedPref.getString("locationKey", "")
+       val location =  gson.fromJson(json, SearchedLocations::class.java)
+         getCurrentWeather(this, location) {
+            temp.value = it
+         }
     }
 }
 

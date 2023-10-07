@@ -29,7 +29,11 @@ object WeatherManager {
         })
     }
 
-    fun getCurrentWeather(context: Context, location: SearchedLocations, onSuccessCall: (TemperatureResponse) -> Unit) {
+    fun getCurrentWeather(context: Context, location: SearchedLocations?, onSuccessCall: (TemperatureResponse?) -> Unit) {
+        if (location == null)  {
+            onSuccessCall(null)
+            return
+        }
         if (BuildConfig.DEBUG) {
             getDataFromMock(onSuccessCall)
         } else {
