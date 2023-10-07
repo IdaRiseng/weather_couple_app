@@ -1,23 +1,18 @@
 package com.example.wouple.activities.mainActivity
 
-import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -27,22 +22,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.BottomCenter
-import androidx.compose.ui.Alignment.Companion.BottomEnd
-import androidx.compose.ui.Alignment.Companion.Center
-import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.Alignment.Companion.CenterStart
-import androidx.compose.ui.Alignment.Companion.CenterVertically
-import androidx.compose.ui.Alignment.Companion.End
-import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.R
@@ -50,15 +36,13 @@ import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.model.api.SearchedLocations
 import com.example.wouple.model.api.TemperatureResponse
-import com.example.wouple.ui.theme.ButtonBlue
-import com.example.wouple.ui.theme.Dark20
 import com.example.wouple.ui.theme.Spiro
 
 @Composable
 fun NoTemperatureView(
     locations: List<SearchedLocations>?,
     onSearch: (String) -> Unit,
-    onLocationButtonClicked: (SearchedLocations) -> Unit,
+    onLocationButtonClicked: (SearchedLocations) -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -94,9 +78,9 @@ fun NoTemperatureView(
             modifier = Modifier.fillMaxSize(),
         ) {
             Text(
-                modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp),
+                modifier = Modifier.padding(vertical =8.dp, horizontal = 16.dp).padding(top = 8.dp),
                 text = "Wouple Forecast",
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Normal,
                 fontFamily = FontFamily.Cursive,
                 fontSize = 32.sp,
                 color = Color.White,
@@ -104,7 +88,8 @@ fun NoTemperatureView(
 
             SearchBar(onSearch)
             locations?.forEach { location ->
-                Button(onClick = {
+                Button(
+                    onClick = {
                     onLocationButtonClicked(location)
                 }) {
                     Text(text = location.display_name)
@@ -131,15 +116,15 @@ fun NoTemperatureView(
                 .padding(16.dp),
             contentAlignment = Alignment.BottomEnd
         ) {
-            dropDownMenu()
+            DropDownMenu()
         }
     }
 }
 
 @Composable
-fun dropDownMenu() {
+fun DropDownMenu() {
     var isExpanded by remember { mutableStateOf(false) }
-    Box() {
+    Box {
         IconButton(
             onClick = { isExpanded = !isExpanded }
         ) {
@@ -153,7 +138,7 @@ fun dropDownMenu() {
         {
             DropdownMenuItem(onClick = { /*TODO*/ })
             {
-                Column() {
+                Column {
                     Text(text = "Celcius C")
                     Text(text = "Fahreneight F")
                 }

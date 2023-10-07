@@ -26,6 +26,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.Center
@@ -190,7 +194,7 @@ private fun HorizontalPagerIndicator(step: Int, totalSteps: Int) {
 
 @Composable
 fun LocationView(
-    temp: TemperatureResponse,
+    temp: TemperatureResponse
 ) {
     Column(
         modifier = Modifier
