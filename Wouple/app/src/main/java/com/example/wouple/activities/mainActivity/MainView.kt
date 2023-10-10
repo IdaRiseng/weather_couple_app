@@ -126,8 +126,7 @@ fun FirstCardView(
             ) {
                 SearchBar(onSearch, onClose)
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 8.dp),
+                    modifier = Modifier.padding(start = 16.dp),
                     text = temp.current_weather.temperature.toInt()
                         .toString() + temp.hourly_units.temperature_2m[0],
                     fontWeight = FontWeight.Thin,
@@ -167,7 +166,7 @@ fun FirstCardView(
 
             if (locations != null) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.padding(top = 74.dp).fillMaxSize(),
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
                     items(locations) { location ->
@@ -321,7 +320,7 @@ private fun CardInformation(temp: TemperatureResponse) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.Start
     ) {
-        Row() {
+        Row {
             val day = 0
             val forecastMini = temp.daily.temperature_2m_min[day].toInt().toString()
 
@@ -418,7 +417,7 @@ fun SearchBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(top = 16.dp, start = 16.dp, end = 16.dp)
             .background(
                 color = if (isSearchExpanded) Color.White else Color.Transparent,
                 shape = RoundedCornerShape(28.dp)
