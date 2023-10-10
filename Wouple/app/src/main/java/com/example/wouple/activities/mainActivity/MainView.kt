@@ -110,8 +110,7 @@ fun FirstCardView(
     onClose: () -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         Box(
             modifier = Modifier
@@ -122,12 +121,10 @@ fun FirstCardView(
             contentAlignment = Alignment.BottomCenter
         ) {
             Column(
-                modifier = Modifier
-                    .align(TopCenter)
-                    .padding(top = 50.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                SearchBar(onSearch, onClose)
                 Text(
                     modifier = Modifier
                         .padding(start = 16.dp, top = 8.dp),
@@ -156,60 +153,61 @@ fun FirstCardView(
                     modifier = Modifier.size(60.dp),
                     alignment = Alignment.BottomCenter
                 )
-            }
-            Button(
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .align(BottomCenter),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(Whitehis),
-                onClick = {
-                    onDetailsButtonClicked(temp)
-                }) {
-                Text(text = "Forecast details")
-            }
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(vertical = 8.dp)
-            ) {
-                item {
-                    SearchBar(onSearch, onClose)
+                Button(
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(Whitehis),
+                    onClick = {
+                        onDetailsButtonClicked(temp)
+                    }) {
+                    Text(text = "Forecast details")
                 }
-                items(locations ?: emptyList()) { location ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .clickable {
-                                searchedLocation.value = location
-                                onLocationButtonClicked(location)
-                            },
-                        elevation = 4.dp,
-                        backgroundColor = Color.White
-                    ) {
-                        Row(
+            }
+
+
+            if (locations != null) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(locations) { location ->
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = CenterVertically
+                                .padding(vertical = 4.dp)
+                                .clickable {
+                                    searchedLocation.value = location
+                                    onLocationButtonClicked(location)
+                                },
+                            elevation = 4.dp,
+                            backgroundColor = Color.White
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.pin),
-                                contentDescription = null,
-                                tint = Color.Red
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.pin),
+                                    contentDescription = null,
+                                    tint = Color.Red
+                                )
 
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = location.display_name,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = Color.Black
-                            )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text(
+                                    text = location.display_name,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = Color.Black
+                                )
+                            }
                         }
                     }
                 }
             }
+
+
             HorizontalWave(
                 phase = rememberPhaseState(0f),
                 alpha = 1f,
