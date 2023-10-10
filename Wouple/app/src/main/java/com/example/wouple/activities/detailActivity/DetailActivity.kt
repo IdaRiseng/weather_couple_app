@@ -32,6 +32,7 @@ import com.example.wouple.R
 import com.example.wouple.activities.detailActivity.WeatherCondition.RAINY
 import com.example.wouple.activities.detailActivity.WeatherCondition.SNOWY
 import com.example.wouple.formatter.DateFormatter
+import com.example.wouple.model.api.SearchedLocations
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.*
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -47,8 +48,9 @@ class SecondActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-                val temp = intent.getParcelableExtra<TemperatureResponse>("temp")
-                temp?.let { SecondCardView(it) }
+            val location = intent.getParcelableExtra<SearchedLocations>("location")?: throw IllegalStateException("location is wrong")
+            val temp = intent.getParcelableExtra<TemperatureResponse>("temp")?: throw IllegalStateException("temp is wrong")
+             SecondCardView(temp, location)
         }
     }
 }

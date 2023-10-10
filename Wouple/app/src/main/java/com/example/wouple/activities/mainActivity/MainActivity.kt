@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import com.example.wouple.activities.detailActivity.SecondActivity
 import com.example.wouple.manager.WeatherManager.getCurrentWeather
 import com.example.wouple.manager.WeatherManager.getSearchedLocations
@@ -19,11 +20,9 @@ import com.example.wouple.ui.theme.WoupleTheme
 import com.google.gson.Gson
 
 class MainActivity : ComponentActivity() {
-
     private val temp: MutableState<TemperatureResponse?> = mutableStateOf(null)
     private val searchedLocations: MutableState<List<SearchedLocations>?> = mutableStateOf(null)
     private val searchedLocation: MutableState<SearchedLocations?> = mutableStateOf(null)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -35,6 +34,8 @@ class MainActivity : ComponentActivity() {
                         onLocationButtonClicked = { location ->
                             onLocationButtonClicked(location)
                         },
+                        searchedLocations = searchedLocation,
+                        onClose = {searchedLocations.value = null},
                         onSearch = { query ->
                             getSearchedLocations(
                                 context = this,
@@ -52,6 +53,7 @@ class MainActivity : ComponentActivity() {
                             onLocationButtonClicked(location)
                         },
                         searchedLocation = searchedLocation,
+                        onClose = {searchedLocations.value = null},
                         onSearch = { query ->
                             getSearchedLocations(
                                 context = this,
@@ -59,12 +61,14 @@ class MainActivity : ComponentActivity() {
                                 onSuccessCall = { location ->
                                     searchedLocations.value = location
                                 })
+                        },
+                        onDetailsButtonClicked = { temp ->
+                            val intent = Intent(this, SecondActivity::class.java)
+                            intent.putExtra("temp", temp)
+                            intent.putExtra("location", searchedLocation.value)
+                            this.startActivity(intent)
                         }
-                    ) { temp ->
-                        val intent = Intent(this, SecondActivity::class.java)
-                        intent.putExtra("temp", temp)
-                        this.startActivity(intent)
-                    }
+                    )
                 }
             }
         }

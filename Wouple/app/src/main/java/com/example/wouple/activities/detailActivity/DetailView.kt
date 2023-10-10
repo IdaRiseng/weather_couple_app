@@ -1,6 +1,5 @@
 package com.example.wouple.activities.detailActivity
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -9,8 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,56 +20,39 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
-import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.Center
-import androidx.compose.ui.Alignment.Companion.CenterEnd
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.Alignment.Companion.CenterStart
-import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Alignment.Companion.End
-import androidx.compose.ui.Alignment.Companion.Start
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.R
 import com.example.wouple.elements.HorizontalWave
-import com.example.wouple.elements.SunRiseAndSetProgress
 import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.formatter.DateFormatter
 import com.example.wouple.model.api.SearchedLocations
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark20
-import com.example.wouple.ui.theme.Orange
 import com.example.wouple.ui.theme.PagerColor
-import com.example.wouple.ui.theme.Red
 import com.example.wouple.ui.theme.Spir
 import com.example.wouple.ui.theme.Spiro
-import com.example.wouple.ui.theme.Tangerine
 import com.example.wouple.ui.theme.Whitehis
 import com.example.wouple.ui.theme.Yellow20
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import java.nio.file.WatchEvent
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -83,7 +63,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun SecondCardView(temp: TemperatureResponse) {
+fun SecondCardView(temp: TemperatureResponse, searchedLocations: SearchedLocations) {
     val scrollStateOne = rememberScrollState()
     val isDay = temp.current_weather.is_day == 1
     val backgroundResource = when {
@@ -105,7 +85,6 @@ fun SecondCardView(temp: TemperatureResponse) {
             )
             .verticalScroll(scrollStateOne),
     ) {
-
         val index =
             temp.hourly.time.map { LocalDateTime.parse(it).hour }.indexOf(LocalDateTime.now().hour)
         val feelsLike = index.let { temp.hourly.apparent_temperature[it].toInt() }
@@ -115,8 +94,7 @@ fun SecondCardView(temp: TemperatureResponse) {
             temp.daily.time.map { LocalDate.parse(it).dayOfWeek }.indexOf(LocalDate.now().dayOfWeek)
         val rainFall = rainIndex.let { temp.daily.rain_sum[rainIndex].toInt() }
         val visibilityInMeters = index.let { temp.hourly.visibility[it].toInt() }
-
-        LocationView(temp)
+        LocationView(temp, searchedLocations)
         /*Row {
             SunRise(temp)
             SunSet(temp)
@@ -192,26 +170,30 @@ private fun HorizontalPagerIndicator(step: Int, totalSteps: Int) {
     }
 }
 
+private fun getProperDisplayName(displayName: String?) = displayName?.split(",")?.firstOrNull()
+
 @Composable
 fun LocationView(
-    temp: TemperatureResponse
+    temp: TemperatureResponse,
+    searchedLocations: SearchedLocations
 ) {
     Column(
         modifier = Modifier
-            .padding(top = 40.dp, bottom = 20.dp)
-            .fillMaxWidth(1f),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxWidth(1f)
+            .padding(horizontal = 16.dp, vertical = 36.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "",
+            text = getProperDisplayName(searchedLocations.display_name) ?: "N/D",
             fontSize = 50.sp,
             color = Color.Black,
         )
+        Spacer(modifier = Modifier.padding(4.dp))
         Text(
             text = "${temp.current_weather.temperature.toInt()}°",
             color = Color.Black,
             fontSize = 64.sp,
-            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 20.dp)
         )
         val weatherDescriptions = mapOf(
@@ -242,15 +224,17 @@ fun LocationView(
             86 to "Heavy Snow Showers",
             95 to "Thunderstorm"
         )
+        Spacer(modifier = Modifier.padding(4.dp))
         val weatherCode = temp.current_weather.weathercode
         val weatherDescription = weatherDescriptions[weatherCode] ?: "Unknown"
         Text(
             text = weatherDescription,
             color = Color.Black,
-            fontSize = 24.sp
+            fontSize = 24.sp,
         )
     }
 }
+
 @Composable
 fun HourlyForecastView(temp: TemperatureResponse) {
     val scrollState = rememberScrollState()
@@ -363,7 +347,7 @@ fun SunSet(temp: TemperatureResponse) {
     } ?: ""
     Column(
         modifier = Modifier,
-        horizontalAlignment = Alignment.End,
+        horizontalAlignment =End,
         verticalArrangement = Arrangement.Top
     ) {
         Text(
@@ -375,6 +359,7 @@ fun SunSet(temp: TemperatureResponse) {
         )
     }
 }
+
 @Composable
 fun DayLength(temp: TemperatureResponse) {
     val now = LocalDateTime.now().toLocalDate()
@@ -415,7 +400,7 @@ fun DayLength(temp: TemperatureResponse) {
 
     Column(
         modifier = Modifier,
-        horizontalAlignment = Alignment.End,
+        horizontalAlignment = End,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
@@ -478,7 +463,7 @@ private fun SunsetSunriseCard(temp: TemperatureResponse) {
                 modifier = Modifier.padding(start = 8.dp)
             ) {
                 SunRise(temp)
-                Row() {
+                Row {
                     Icon(
                         painter = painterResource(id = R.drawable.arrowdropup),
                         contentDescription = null,
@@ -606,8 +591,6 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
             val somessd = LocalDate.parse(daysOfWeek).dayOfWeek.toString()
             val forecastMin = temp.daily.temperature_2m_min[days].toInt()
             val forecastMax = temp.daily.temperature_2m_max[days].toInt()
-            val currentTemp = temp.current_weather.temperature.toInt()
-
             val weatherCondition = when (temp.daily.weathercode[days]) {
                 in 0..2 -> WeatherCondition.SUNNY
                 3, 4 -> WeatherCondition.CLOUDY

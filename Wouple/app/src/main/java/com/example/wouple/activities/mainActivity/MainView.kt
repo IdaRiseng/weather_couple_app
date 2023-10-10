@@ -1,22 +1,26 @@
 package com.example.wouple.activities.mainActivity
 
 import android.content.Intent
+import android.transition.Visibility
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -27,6 +31,8 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -42,14 +48,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.BottomEnd
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -59,7 +66,9 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.example.wouple.R
+import com.example.wouple.activities.detailActivity.WeatherCondition
 import com.example.wouple.elements.GetWeatherCodes
 import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
@@ -97,7 +106,8 @@ fun FirstCardView(
     onSearch: (String) -> Unit,
     searchedLocation: MutableState<SearchedLocations?>,
     onLocationButtonClicked: (SearchedLocations) -> Unit,
-    onDetailsButtonClicked: (TemperatureResponse) -> Unit
+    onDetailsButtonClicked: (TemperatureResponse) -> Unit,
+    onClose: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -116,7 +126,7 @@ fun FirstCardView(
                     .align(TopCenter)
                     .padding(top = 50.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     modifier = Modifier
@@ -133,35 +143,68 @@ fun FirstCardView(
                     fontSize = 50.sp,
                     color = Color.White,
                 )
+                val todayWeatherConditions = when (temp.current_weather.weathercode) {
+                    0, 1 -> WeatherCondition.SUNNY
+                    2, 3 -> WeatherCondition.CLOUDY
+                    51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> WeatherCondition.RAINY
+                    71, 73, 75, 77, 85, 86 -> WeatherCondition.SNOWY
+                    else -> WeatherCondition.SUNNY
+                }
                 Image(
-                    painter = painterResource(id = R.drawable.sun), contentDescription = null,
-                    modifier = Modifier.size(60.dp), alignment = Alignment.BottomEnd
+                    painter = painterResource(id = todayWeatherConditions.imageResourceId),
+                    contentDescription = null,
+                    modifier = Modifier.size(60.dp),
+                    alignment = Alignment.BottomCenter
                 )
+            }
+            Button(
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .align(BottomCenter),
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(Whitehis),
+                onClick = {
+                    onDetailsButtonClicked(temp)
+                }) {
+                Text(text = "Forecast details")
             }
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
                 item {
-                    SearchBar(onSearch)
+                    SearchBar(onSearch, onClose)
                 }
-                items(locations ?: emptyList()) {
-                    Column(
+                items(locations ?: emptyList()) { location ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
-                    ) {
-                        locations?.sortedBy { it.display_name }?.forEach { location ->
-                            Button(onClick = {
+                            .clickable {
                                 searchedLocation.value = location
                                 onLocationButtonClicked(location)
-                            }) {
-                                Text(text = location.display_name)
-                            }
-                            Divider(
-                                modifier = Modifier.fillMaxWidth(),
-                                color = Color.Gray,
-                                thickness = 1.dp
+                            },
+                        elevation = 4.dp,
+                        backgroundColor = Color.White
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.pin),
+                                contentDescription = null,
+                                tint = Color.Red
+                            )
+
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = location.display_name,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = Color.Black
                             )
                         }
                     }
@@ -205,6 +248,32 @@ fun FirstCardView(
     }
 }
 
+@Composable
+fun DropDownMenu() {
+    var isExpanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(
+            onClick = { isExpanded = !isExpanded }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.menuicon), contentDescription = null,
+                modifier = Modifier.size(40.dp)
+            )
+        }
+        DropdownMenu(expanded = isExpanded,
+            onDismissRequest = { isExpanded = false })
+        {
+            DropdownMenuItem(onClick = { /*TODO*/ })
+            {
+                Column {
+                    Text(text = "Celcius C")
+                    Text(text = "Fahreneight F")
+                }
+            }
+        }
+    }
+}
+
 private fun getProperDisplayName(displayName: String?) = displayName?.split(",")?.firstOrNull()
 
 @Composable
@@ -240,17 +309,6 @@ private fun TodayWeatherCard(
                     .padding(8.dp)
             )
             CardInformation(temp)
-            Button(
-                modifier = Modifier
-                    .padding(top = 8.dp, bottom = 16.dp)
-                    .align(BottomEnd),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(Whitehis),
-                onClick = {
-                    onDetailsButtonClicked(temp)
-                }) {
-                Text(text = "Forecast details")
-            }
         }
     }
 }
@@ -351,13 +409,14 @@ fun ClickableCardDemo() {
     }
 }
 
-
 @Composable
-fun SearchBar(onSearch: (String) -> Unit) {
+fun SearchBar(
+    onSearch: (String) -> Unit,
+    onClose: () -> Unit
+) {
     var isSearchExpanded by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     var query by remember { mutableStateOf("") }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -421,6 +480,7 @@ fun SearchBar(onSearch: (String) -> Unit) {
                 if (!isSearchExpanded) {
                     query = ""
                 }
+                onClose()
             },
             modifier = Modifier
                 .padding(end = 16.dp)

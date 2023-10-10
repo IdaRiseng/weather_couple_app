@@ -1,15 +1,23 @@
 package com.example.wouple.activities.mainActivity
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -17,6 +25,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,7 +49,9 @@ import com.example.wouple.ui.theme.Spiro
 fun NoTemperatureView(
     locations: List<SearchedLocations>?,
     onSearch: (String) -> Unit,
-    onLocationButtonClicked: (SearchedLocations) -> Unit
+    onLocationButtonClicked: (SearchedLocations) -> Unit,
+    searchedLocations: MutableState<SearchedLocations?>,
+    onClose: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -76,21 +87,54 @@ fun NoTemperatureView(
             modifier = Modifier.fillMaxSize(),
         ) {
             Text(
-                modifier = Modifier.padding(vertical =8.dp, horizontal = 16.dp).padding(top = 8.dp),
+                modifier = Modifier
+                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                    .padding(top = 8.dp),
                 text = "Wouple Forecast",
                 fontWeight = FontWeight.Normal,
                 fontFamily = FontFamily.Cursive,
                 fontSize = 32.sp,
                 color = Color.White,
             )
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                item {
+                    SearchBar(onSearch, onClose)
+                }
+                items(locations ?: emptyList()) { location ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clickable {
+                                searchedLocations.value = location
+                                onLocationButtonClicked(location)
+                            },
+                        elevation = 4.dp,
+                        backgroundColor = Color.White
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(painter = painterResource(id = R.drawable.pin),
+                                contentDescription = null,
+                                tint = Color.Red
+                            )
 
-            SearchBar(onSearch)
-            locations?.forEach { location ->
-                Button(
-                    onClick = {
-                    onLocationButtonClicked(location)
-                }) {
-                    Text(text = location.display_name)
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = location.display_name,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -107,40 +151,6 @@ fun NoTemperatureView(
                     .size(70.dp)
                     .padding(start = 16.dp, bottom = 8.dp)
             )
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            DropDownMenu()
-        }
-    }
-}
-
-@Composable
-fun DropDownMenu() {
-    var isExpanded by remember { mutableStateOf(false) }
-    Box {
-        IconButton(
-            onClick = { isExpanded = !isExpanded }
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.menuicon), contentDescription = null,
-                modifier = Modifier.size(40.dp)
-            )
-        }
-        DropdownMenu(expanded = isExpanded,
-            onDismissRequest = { isExpanded = false })
-        {
-            DropdownMenuItem(onClick = { /*TODO*/ })
-            {
-                Column {
-                    Text(text = "Celcius C")
-                    Text(text = "Fahreneight F")
-                }
-            }
         }
     }
 }
