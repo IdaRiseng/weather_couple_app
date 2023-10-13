@@ -19,5 +19,5 @@ interface ApiRequest {
     ): Call<TemperatureResponse>
 
     @GET("https://geocode.maps.co/search")
-    fun getSearchedLocations(@Query("q") address: String): Call<List<SearchedLocations>>
+    fun getSearchedLocations(@Query("q") address: String): Call<List<SearchedLocation>>
 }
