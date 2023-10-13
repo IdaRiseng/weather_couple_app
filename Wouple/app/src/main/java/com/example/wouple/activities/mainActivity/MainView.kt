@@ -43,16 +43,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.BottomEnd
 import androidx.compose.ui.Alignment.Companion.CenterVertically
-import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Alignment.Companion.TopCenter
-import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -64,10 +62,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.R
 import com.example.wouple.activities.detailActivity.WeatherCondition
+import com.example.wouple.activities.lightningMap.LightningMapActivity
 import com.example.wouple.elements.GetWeatherCodes
 import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
-import com.example.wouple.model.api.SearchedLocations
+import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Dark20
 import com.example.wouple.ui.theme.Spiro
@@ -97,10 +96,10 @@ fun DefaultPreview() {
 @Composable
 fun FirstCardView(
     temp: TemperatureResponse,
-    locations: List<SearchedLocations>?,
+    locations: List<SearchedLocation>?,
     onSearch: (String) -> Unit,
-    searchedLocation: MutableState<SearchedLocations?>,
-    onLocationButtonClicked: (SearchedLocations) -> Unit,
+    searchedLocation: MutableState<SearchedLocation?>,
+    onLocationButtonClicked: (SearchedLocation) -> Unit,
     onDetailsButtonClicked: (TemperatureResponse) -> Unit,
     onClose: () -> Unit
 ) {
@@ -230,7 +229,7 @@ fun FirstCardView(
                 .background(Color.White)
                 .padding(bottom = 16.dp)
         ) {
-            ClickableCardDemo()
+            searchedLocation.value?.let { ClickableCardDemo(it) }
         }
     }
 }
@@ -370,10 +369,14 @@ private fun CardInformation(temp: TemperatureResponse) {
     }
 }
 @Composable
-fun ClickableCardDemo() {
+fun ClickableCardDemo(searchedLocation: SearchedLocation) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxSize()
+            .clickable {
+                context.startActivity(LightningMapActivity.newIntent(context, searchedLocation))
+            }
             .padding(16.dp),
         backgroundColor = Color.Black,
         shape = RoundedCornerShape(20.dp),

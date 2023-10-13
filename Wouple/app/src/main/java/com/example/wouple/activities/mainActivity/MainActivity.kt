@@ -2,27 +2,24 @@ package com.example.wouple.activities.mainActivity
 
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import com.example.wouple.activities.detailActivity.SecondActivity
 import com.example.wouple.manager.WeatherManager.getCurrentWeather
 import com.example.wouple.manager.WeatherManager.getSearchedLocations
-import com.example.wouple.model.api.SearchedLocations
+import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.preferences.LocationPref
 import com.example.wouple.ui.theme.WoupleTheme
-import com.google.gson.Gson
 
 class MainActivity : ComponentActivity() {
     private val temp: MutableState<TemperatureResponse?> = mutableStateOf(null)
-    private val searchedLocations: MutableState<List<SearchedLocations>?> = mutableStateOf(null)
-    private val searchedLocation: MutableState<SearchedLocations?> = mutableStateOf(null)
+    private val searchedLocations: MutableState<List<SearchedLocation>?> = mutableStateOf(null)
+    private val searchedLocation: MutableState<SearchedLocation?> = mutableStateOf(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -33,7 +30,7 @@ class MainActivity : ComponentActivity() {
                         onLocationButtonClicked = { location ->
                             onLocationButtonClicked(location)
                         },
-                        searchedLocations = searchedLocation,
+                        searchedLocation = searchedLocation,
                         onClose = {searchedLocations.value = null},
                         onSearch = { query ->
                             getSearchedLocations(
@@ -73,7 +70,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun onLocationButtonClicked(location: SearchedLocations) {
+    private fun onLocationButtonClicked(location: SearchedLocation) {
         LocationPref.setSearchedLocation(this, location)
         getCurrentWeather(
             context = this,

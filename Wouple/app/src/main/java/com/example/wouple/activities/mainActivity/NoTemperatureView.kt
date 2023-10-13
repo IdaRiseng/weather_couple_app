@@ -16,20 +16,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
 import androidx.compose.material.Card
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
@@ -42,15 +34,15 @@ import androidx.compose.ui.unit.sp
 import com.example.wouple.R
 import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
-import com.example.wouple.model.api.SearchedLocations
+import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.ui.theme.Spiro
 
 @Composable
 fun NoTemperatureView(
-    locations: List<SearchedLocations>?,
+    locations: List<SearchedLocation>?,
     onSearch: (String) -> Unit,
-    onLocationButtonClicked: (SearchedLocations) -> Unit,
-    searchedLocations: MutableState<SearchedLocations?>,
+    onLocationButtonClicked: (SearchedLocation) -> Unit,
+    searchedLocation: MutableState<SearchedLocation?>,
     onClose: () -> Unit
 ) {
     Box(
@@ -109,7 +101,7 @@ fun NoTemperatureView(
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
                             .clickable {
-                                searchedLocations.value = location
+                                searchedLocation.value = location
                                 onLocationButtonClicked(location)
                             },
                         elevation = 4.dp,

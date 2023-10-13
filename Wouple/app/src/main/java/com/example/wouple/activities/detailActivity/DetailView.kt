@@ -1,6 +1,5 @@
 package com.example.wouple.activities.detailActivity
 
-import android.graphics.Paint.Align
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -25,9 +24,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
-import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,11 +33,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.android.style.BaselineShiftSpan
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +42,7 @@ import com.example.wouple.R
 import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.formatter.DateFormatter
-import com.example.wouple.model.api.SearchedLocations
+import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark20
@@ -70,7 +64,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun SecondCardView(temp: TemperatureResponse, searchedLocations: SearchedLocations) {
+fun SecondCardView(temp: TemperatureResponse, searchedLocation: SearchedLocation) {
     val scrollStateOne = rememberScrollState()
     val isDay = temp.current_weather.is_day == 1
     val backgroundResource = when {
@@ -102,7 +96,7 @@ fun SecondCardView(temp: TemperatureResponse, searchedLocations: SearchedLocatio
         val rainFall = rainIndex.let { temp.daily.rain_sum[rainIndex].toInt() }
         val visibilityInMeters = index.let { temp.hourly.visibility[it].toInt() }
         val windSpeed = index.let { temp.hourly.windspeed_10m[it].toInt() }
-        LocationView(temp, searchedLocations)
+        LocationView(temp, searchedLocation)
         SunsetSunriseCard(temp)
         HourlyForecastView(temp)
         WeeklyForeCastView(temp)
@@ -184,7 +178,7 @@ private fun getProperDisplayName(displayName: String?) = displayName?.split(",")
 @Composable
 fun LocationView(
     temp: TemperatureResponse,
-    searchedLocations: SearchedLocations
+    searchedLocation: SearchedLocation
 ) {
     Column(
         modifier = Modifier
@@ -194,7 +188,7 @@ fun LocationView(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = getProperDisplayName(searchedLocations.display_name) ?: "N/D",
+            text = getProperDisplayName(searchedLocation.display_name) ?: "N/D",
             fontSize = 50.sp,
             color = Color.Black,
             textAlign = TextAlign.Center
