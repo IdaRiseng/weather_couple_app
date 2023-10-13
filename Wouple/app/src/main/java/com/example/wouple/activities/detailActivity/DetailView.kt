@@ -1,5 +1,6 @@
 package com.example.wouple.activities.detailActivity
 
+import android.graphics.Paint.Align
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -25,6 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,8 +36,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.FirstBaseline
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.android.style.BaselineShiftSpan
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wouple.R
@@ -94,18 +101,15 @@ fun SecondCardView(temp: TemperatureResponse, searchedLocations: SearchedLocatio
             temp.daily.time.map { LocalDate.parse(it).dayOfWeek }.indexOf(LocalDate.now().dayOfWeek)
         val rainFall = rainIndex.let { temp.daily.rain_sum[rainIndex].toInt() }
         val visibilityInMeters = index.let { temp.hourly.visibility[it].toInt() }
+        val windSpeed = index.let { temp.hourly.windspeed_10m[it].toInt() }
         LocationView(temp, searchedLocations)
-        /*Row {
-            SunRise(temp)
-            SunSet(temp)
-        }*/
         SunsetSunriseCard(temp)
         HourlyForecastView(temp)
         WeeklyForeCastView(temp)
         Spacer(modifier = Modifier.padding(6.dp))
 
         val pagerState = rememberPagerState()
-        HorizontalPager(state = pagerState, count = 5, modifier = Modifier)
+        HorizontalPager(state = pagerState, count = 6, modifier = Modifier)
         { page ->
             when (page) {
                 0 -> ExtraCards(
@@ -120,11 +124,10 @@ fun SecondCardView(temp: TemperatureResponse, searchedLocations: SearchedLocatio
                     Numbers = rainFall.toString() + temp.daily_units.rain_sum,
                     Icon = painterResource(id = R.drawable.drop)
                 )
-
                 2 -> ExtraCards(
-                    Text = "Humidity",
-                    Numbers = temp.hourly_units.relativehumidity_2m + humidity.toString(),
-                    Icon = painterResource(id = R.drawable.humidity)
+                    Text = "Wind Speed",
+                    Numbers = windSpeed.toString() + temp.hourly_units.windspeed_10m,
+                    Icon = painterResource(id = R.drawable.windicon)
                 )
 
                 3 -> ExtraCards(
@@ -134,6 +137,12 @@ fun SecondCardView(temp: TemperatureResponse, searchedLocations: SearchedLocatio
                 )
 
                 4 -> ExtraCards(
+                    Text = "Humidity",
+                    Numbers = temp.hourly_units.relativehumidity_2m + humidity.toString(),
+                    Icon = painterResource(id = R.drawable.humidity)
+                )
+
+                5 -> ExtraCards(
                     Text = "Dew Point",
                     Numbers = dewPoint.toString() + temp.hourly_units.temperature_2m,
                     Icon = painterResource(id = R.drawable.dew)
@@ -188,13 +197,16 @@ fun LocationView(
             text = getProperDisplayName(searchedLocations.display_name) ?: "N/D",
             fontSize = 50.sp,
             color = Color.Black,
+            textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.padding(4.dp))
+        Spacer(modifier = Modifier.padding(8.dp))
         Text(
             text = "${temp.current_weather.temperature.toInt()}°",
             color = Color.Black,
+            modifier = Modifier.padding(start = 4.dp),
+            fontWeight = FontWeight.Normal,
             fontSize = 64.sp,
-            modifier = Modifier.padding(start = 20.dp)
+            textAlign = TextAlign.Center
         )
         val weatherDescriptions = mapOf(
             0 to "Clear Sky",
@@ -224,14 +236,47 @@ fun LocationView(
             86 to "Heavy Snow Showers",
             95 to "Thunderstorm"
         )
-        Spacer(modifier = Modifier.padding(4.dp))
+        Spacer(modifier = Modifier.padding(8.dp))
         val weatherCode = temp.current_weather.weathercode
         val weatherDescription = weatherDescriptions[weatherCode] ?: "Unknown"
-        Text(
-            text = weatherDescription,
-            color = Color.Black,
-            fontSize = 24.sp,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            val day = 0
+            val forecastMini = temp.daily.temperature_2m_min[day].toInt().toString()
+            val maximumDegree = temp.daily.temperature_2m_max[day].toInt().toString()
+            Icon(
+                modifier = Modifier.size(30.dp),
+                painter = painterResource(id = R.drawable.arrowdropdown),
+                contentDescription = null
+            )
+            Text(
+                text = forecastMini + temp.hourly_units.temperature_2m.firstOrNull(),
+                color = Color.Black,
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.padding(16.dp))
+            Text(
+                text = weatherDescription,
+                color = Color.Black,
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.padding(16.dp))
+            Text(
+                text = maximumDegree + temp.hourly_units.temperature_2m.firstOrNull(),
+                color = Color.Black,
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center
+            )
+            Icon(
+                modifier = Modifier.size(30.dp),
+                painter = painterResource(id = R.drawable.arrowdropup),
+                contentDescription = null
+            )
+        }
     }
 }
 
@@ -258,7 +303,8 @@ fun HourlyForecastView(temp: TemperatureResponse) {
                     .align(Alignment.CenterVertically)
                     .padding(start = 10.dp),
                 text = "HOURLY FORECAST",
-                color = Corn
+                color = Corn,
+                fontWeight = FontWeight.Light
             )
         }
         Divider(
@@ -289,11 +335,11 @@ fun HourlyForecastView(temp: TemperatureResponse) {
                 }
                 if (!isDaytime) {
                     val hourlyWeatherConditionNight = when (temp.hourly.weathercode[index]) {
-                        0, 1 -> WeatherCondition.NIGHT
-                        2, 3 -> WeatherCondition.CLOUDY
+                        0, 1 -> WeatherCondition.CLEARNIGHT
+                        2, 3 -> WeatherCondition.CLOUDYNIGHT
                         51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> WeatherCondition.RAINYNIGHT
                         else -> {
-                            WeatherCondition.NIGHT
+                            WeatherCondition.CLEARNIGHT
                         }
                     }
                     Hours(time, temperature, hourlyWeatherConditionNight)
@@ -347,7 +393,7 @@ fun SunSet(temp: TemperatureResponse) {
     } ?: ""
     Column(
         modifier = Modifier,
-        horizontalAlignment =End,
+        horizontalAlignment = End,
         verticalArrangement = Arrangement.Top
     ) {
         Text(
@@ -500,7 +546,7 @@ fun Hours(time: String, temperature: String, hourlyWeatherCondition: WeatherCond
     Column(
         modifier = Modifier
             .padding(4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = CenterHorizontally
     ) {
         Text(
             modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
@@ -527,8 +573,9 @@ enum class WeatherCondition(val imageResourceId: Int) {
     RAINY(R.drawable.rainyday),
     CLOUDY(R.drawable.cloudydaylight),
     SNOWY(R.drawable.cloudsnow),
-    NIGHT(R.drawable.halfmoonblue),
-    RAINYNIGHT(R.drawable.rainynight)
+    RAINYNIGHT(R.drawable.rainynight),
+    CLEARNIGHT(R.drawable.clearnight),
+    CLOUDYNIGHT(R.drawable.cloudynight)
     // Adds weather conditions and their associated images
 }
 
@@ -536,11 +583,11 @@ enum class WeatherCondition(val imageResourceId: Int) {
 fun WeeklyForeCastView(temp: TemperatureResponse) {
     Column(
         modifier = Modifier
-            .padding(vertical = 4.dp, horizontal = 14.dp)
+            .padding(vertical = 4.dp, horizontal = 16.dp)
             .fillMaxWidth()
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(20.dp))
             .background(Dark20)
-            .padding(16.dp)
+            .padding(16.dp),
     ) {
         Row(
             modifier = Modifier.padding(start = 8.dp, top = 8.dp, bottom = 8.dp),
@@ -558,7 +605,8 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
                     .padding(start = 8.dp)
                     .align(Alignment.CenterVertically),
                 text = "WEEKLY FORECAST",
-                color = Corn
+                color = Corn,
+                fontWeight = FontWeight.Light
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
@@ -615,52 +663,47 @@ fun WeeklyForeCastView(temp: TemperatureResponse) {
             }
 
             val imageResource = weatherCondition.imageResourceId
-            Column {
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        modifier = Modifier.padding(top = 8.dp),
-                        text = somessd.lowercase()
-                            .replaceFirstChar {
-                                if (it.isLowerCase()) it.titlecase(locale = Locale.ENGLISH) else it.toString()
-                            },
-                        fontSize = 16.sp,
-                        color = Whitehis
-                    )
-
-                    Image(
-                        painter = painterResource(id = imageResource),
-                        contentDescription = null,
-                        modifier = Modifier.size(26.dp)
-                    )
-                    Text(
-                        modifier = Modifier.padding(start = 26.dp),
-                        text = "$forecastMin°",
-                        color = Whitehis,
-                        fontSize = 18.sp,
-
-                        )
-                    Text(
-                        modifier = Modifier,
-                        text = "$forecastMax°",
-                        color = Whitehis,
-                        fontSize = 18.sp,
-
-                        )
-                }
-                Divider(
-                    color = Color.Gray.copy(alpha = 0.5f),
-                    thickness = 1.dp,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    modifier = Modifier.padding(top = 8.dp),
+                    text = somessd.lowercase()
+                        .replaceFirstChar {
+                            if (it.isLowerCase()) it.titlecase(locale = Locale.ENGLISH) else it.toString()
+                        },
+                    fontSize = 16.sp,
+                    color = Whitehis
                 )
-            }
+                Image(
+                    painter = painterResource(id = imageResource),
+                    contentDescription = null,
+                    modifier = Modifier.size(26.dp)
+                )
+                Text(
+                    modifier = Modifier,
+                    text = "$forecastMin°",
+                    color = Whitehis,
+                    fontSize = 18.sp,
 
+                    )
+                Text(
+                    modifier = Modifier,
+                    text = "$forecastMax°",
+                    color = Whitehis,
+                    fontSize = 18.sp,
+
+                    )
+            }
+            Divider(
+                color = Color.Gray.copy(alpha = 0.5f),
+                thickness = 1.dp,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+            )
         }
     }
 }

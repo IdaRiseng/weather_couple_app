@@ -25,7 +25,6 @@ class MainActivity : ComponentActivity() {
     private val searchedLocation: MutableState<SearchedLocations?> = mutableStateOf(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             WoupleTheme {
                 if (temp.value == null) {

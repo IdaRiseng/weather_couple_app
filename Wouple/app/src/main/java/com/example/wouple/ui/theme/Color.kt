@@ -28,8 +28,7 @@ val Northern = Color(0xFF04E2B7)
 val Pastel = Color(0xFFFF9B50)
 val Spir = Color(0xFF11C3FD)
 val ColdBlue = Color(0xFF107DAC)
-val Red = Color(0xFFB20000)
+val Red = Color(0xFF000000)
 val PagerColor = Color(0xFF2F2F2F)
-
 
 

@@ -15,7 +15,7 @@ interface ApiRequest {
         @Query("models") models: String = "best_match",
         @Query("daily") daily: String = "temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum",
         @Query("timezone") timezone: String = "auto",
-        @Query("current_weather") current_weather: String = "true"
+        @Query("current_weather") current_weather: String = "true",
     ): Call<TemperatureResponse>
 
     @GET("https://geocode.maps.co/search")

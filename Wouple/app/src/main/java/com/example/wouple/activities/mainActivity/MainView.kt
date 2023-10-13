@@ -1,7 +1,5 @@
 package com.example.wouple.activities.mainActivity
 
-import android.content.Intent
-import android.transition.Visibility
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -13,14 +11,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -30,7 +26,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
-import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -48,12 +43,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.BottomEnd
-import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
+import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Alignment.Companion.TopCenter
+import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -66,7 +62,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import com.example.wouple.R
 import com.example.wouple.activities.detailActivity.WeatherCondition
 import com.example.wouple.elements.GetWeatherCodes
@@ -110,7 +105,7 @@ fun FirstCardView(
     onClose: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         Box(
             modifier = Modifier
@@ -121,19 +116,59 @@ fun FirstCardView(
             contentAlignment = Alignment.BottomCenter
         ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 SearchBar(onSearch, onClose)
+                if (locations != null) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(vertical = 4.dp)
+                    ) {
+                        items(locations) { location ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp, horizontal = 16.dp)
+                                    .clip(RoundedCornerShape(30.dp))
+                                    .clickable {
+                                        searchedLocation.value = location
+                                        onLocationButtonClicked(location)
+                                    },
+                                elevation = 4.dp,
+                                backgroundColor = Color.White
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.pin),
+                                        contentDescription = null,
+                                        tint = Color.Red
+                                    )
+                                    Text(
+                                        text = location.display_name,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = Color.Black
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
                 Text(
-                    modifier = Modifier.padding(start = 16.dp),
+                    modifier = Modifier,
                     text = temp.current_weather.temperature.toInt()
                         .toString() + temp.hourly_units.temperature_2m[0],
                     fontWeight = FontWeight.Thin,
                     fontSize = 70.sp,
                     color = Color.White,
                 )
-                Text(
+                Text(modifier = Modifier,
                     text = getProperDisplayName(searchedLocation.value?.display_name) ?: "N/D",
                     fontWeight = FontWeight.Thin,
                     fontSize = 50.sp,
@@ -162,51 +197,6 @@ fun FirstCardView(
                     Text(text = "Forecast details")
                 }
             }
-
-
-            if (locations != null) {
-                LazyColumn(
-                    modifier = Modifier.padding(top = 74.dp).fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    items(locations) { location ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .clickable {
-                                    searchedLocation.value = location
-                                    onLocationButtonClicked(location)
-                                },
-                            elevation = 4.dp,
-                            backgroundColor = Color.White
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = CenterVertically
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.pin),
-                                    contentDescription = null,
-                                    tint = Color.Red
-                                )
-
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Text(
-                                    text = location.display_name,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
-                                    color = Color.Black
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-
             HorizontalWave(
                 phase = rememberPhaseState(0f),
                 alpha = 1f,
@@ -248,13 +238,13 @@ fun FirstCardView(
 @Composable
 fun DropDownMenu() {
     var isExpanded by remember { mutableStateOf(false) }
-    Box {
+    Box{
         IconButton(
             onClick = { isExpanded = !isExpanded }
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.menuicon), contentDescription = null,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(30.dp)
             )
         }
         DropdownMenu(expanded = isExpanded,
@@ -296,16 +286,16 @@ private fun TodayWeatherCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            Text(
+            Text(modifier = Modifier
+                .align(TopCenter)
+                .padding(8.dp),
                 text = "Today's Summary",
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Light,
                 fontSize = 18.sp,
                 color = Color.Black,
-                modifier = Modifier
-                    .align(TopCenter)
-                    .padding(8.dp)
             )
             CardInformation(temp)
+            DropDownMenu()
         }
     }
 }
@@ -379,7 +369,6 @@ private fun CardInformation(temp: TemperatureResponse) {
         }
     }
 }
-
 @Composable
 fun ClickableCardDemo() {
     Card(
@@ -397,7 +386,7 @@ fun ClickableCardDemo() {
         )
         Text(
             text = "Lightning Hunt",
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Light,
             fontSize = 18.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(8.dp)
@@ -417,7 +406,7 @@ fun SearchBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+            .padding(16.dp)
             .background(
                 color = if (isSearchExpanded) Color.White else Color.Transparent,
                 shape = RoundedCornerShape(28.dp)
