@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,13 +44,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.BottomEnd
+import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Alignment.Companion.TopCenter
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -60,17 +66,24 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.wouple.R
 import com.example.wouple.activities.detailActivity.WeatherCondition
 import com.example.wouple.activities.lightningMap.LightningMapActivity
+import com.example.wouple.activities.rainMap.WeatherRadarWebView
 import com.example.wouple.elements.GetWeatherCodes
 import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Dark20
+import com.example.wouple.ui.theme.Northern
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Whitehis
+import com.example.wouple.ui.theme.some
+import com.example.wouple.ui.theme.vintage
+import com.example.wouple.ui.theme.vintage2
 
 
 /*@Preview(showBackground = true)
@@ -115,7 +128,8 @@ fun FirstCardView(
             contentAlignment = Alignment.BottomCenter
         ) {
             Column(
-                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(bottom = 16.dp),
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 SearchBar(onSearch, onClose)
@@ -148,31 +162,36 @@ fun FirstCardView(
                                         contentDescription = null,
                                         tint = Color.Red
                                     )
-                                    Text(
-                                        text = location.display_name,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp,
-                                        color = Color.Black
-                                    )
+                                    getProperDisplayName(location.display_name)?.let {
+                                        Text(
+                                            text = it,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp,
+                                            color = Color.Black
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
                 Text(
-                    modifier = Modifier,
+                    text = getProperDisplayName(searchedLocation.value?.display_name) ?: "N/D",
+                    fontWeight = FontWeight.Thin,
+                    textAlign = TextAlign.Center,
+                    fontSize = 55.sp,
+                    color = Color.White,
+                )
+                Text(
+                    modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
                     text = temp.current_weather.temperature.toInt()
                         .toString() + temp.hourly_units.temperature_2m[0],
+                    textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Thin,
                     fontSize = 70.sp,
                     color = Color.White,
                 )
-                Text(modifier = Modifier,
-                    text = getProperDisplayName(searchedLocation.value?.display_name) ?: "N/D",
-                    fontWeight = FontWeight.Thin,
-                    fontSize = 50.sp,
-                    color = Color.White,
-                )
+
                 val todayWeatherConditions = when (temp.current_weather.weathercode) {
                     0, 1 -> WeatherCondition.SUNNY
                     2, 3 -> WeatherCondition.CLOUDY
@@ -183,17 +202,25 @@ fun FirstCardView(
                 Image(
                     painter = painterResource(id = todayWeatherConditions.imageResourceId),
                     contentDescription = null,
-                    modifier = Modifier.size(60.dp),
+                    modifier = Modifier
+                        .size(60.dp)
+                        .padding(bottom = 8.dp, end = 8.dp),
                     alignment = Alignment.BottomCenter
                 )
-                Button(
-                    modifier = Modifier.padding(bottom = 16.dp),
-                    shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(Whitehis),
-                    onClick = {
-                        onDetailsButtonClicked(temp)
-                    }) {
-                    Text(text = "Forecast details")
+                Row(modifier = Modifier.padding(bottom = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween)
+                {
+                    /*  Button(
+                          modifier = Modifier.padding(bottom = 16.dp),
+                          shape = CircleShape,
+                          colors = ButtonDefaults.buttonColors(Whitehis),
+                          onClick = {
+                              onDetailsButtonClicked(temp)
+                          }) {
+                          Text(text = "Forecast details")
+                      }*/
+                    Spacer(modifier = Modifier.weight(1f))
+                    DropDownMenu()
                 }
             }
             HorizontalWave(
@@ -227,7 +254,8 @@ fun FirstCardView(
             modifier = Modifier
                 .fillMaxHeight(1f)
                 .background(Color.White)
-                .padding(bottom = 16.dp)
+                .padding(bottom = 16.dp),
+            contentAlignment = Center
         ) {
             searchedLocation.value?.let { ClickableCardDemo(it) }
         }
@@ -237,13 +265,13 @@ fun FirstCardView(
 @Composable
 fun DropDownMenu() {
     var isExpanded by remember { mutableStateOf(false) }
-    Box{
+    Box(modifier = Modifier.padding(start = 16.dp)) {
         IconButton(
             onClick = { isExpanded = !isExpanded }
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.menuicon), contentDescription = null,
-                modifier = Modifier.size(30.dp)
+                modifier = Modifier.size(30.dp), tint = Color.White,
             )
         }
         DropdownMenu(expanded = isExpanded,
@@ -262,11 +290,15 @@ fun DropDownMenu() {
 
 private fun getProperDisplayName(displayName: String?) = displayName?.split(",")?.firstOrNull()
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun TodayWeatherCard(
     temp: TemperatureResponse,
-    onDetailsButtonClicked: (TemperatureResponse) -> Unit
+    onDetailsButtonClicked: (TemperatureResponse) -> Unit,
 ) {
+
+    var showDialog by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -278,26 +310,47 @@ private fun TodayWeatherCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
+                .clickable {
+                    showDialog = true
+                }
         ) {
             Image(
-                painter = painterResource(id = R.drawable.snowshowers),
+                painter = painterResource(id = R.drawable.map),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            Text(modifier = Modifier
-                .align(TopCenter)
-                .padding(8.dp),
-                text = "Today's Summary",
+            Text(
+                text = "Weather Radar",
                 fontWeight = FontWeight.Light,
                 fontSize = 18.sp,
-                color = Color.Black,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Center)
             )
-            CardInformation(temp)
-            DropDownMenu()
+            Icon(
+                painter = painterResource(id = R.drawable.arrowup), contentDescription = null,
+                modifier = Modifier
+                    .align(BottomEnd)
+                    .padding(16.dp)
+            )
+        }
+    }
+    if (showDialog) {
+        Dialog(
+            onDismissRequest = { showDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                WeatherRadarWebView(url = "https://map.worldweatheronline.com/temperature?lat=36.884804&lng=30.704044")
+            }
         }
     }
 }
+
 
 @Composable
 private fun CardInformation(temp: TemperatureResponse) {
@@ -368,6 +421,7 @@ private fun CardInformation(temp: TemperatureResponse) {
         }
     }
 }
+
 @Composable
 fun ClickableCardDemo(searchedLocation: SearchedLocation) {
     val context = LocalContext.current
@@ -382,19 +436,27 @@ fun ClickableCardDemo(searchedLocation: SearchedLocation) {
         shape = RoundedCornerShape(20.dp),
         elevation = 4.dp
     ) {
-        // Card content goes here
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp), contentAlignment = Center) {
         Image(
             painter = painterResource(id = R.drawable.map),
             contentDescription = null, contentScale = ContentScale.Crop
         )
-        Text(
+        Text( modifier = Modifier.padding(8.dp),
             text = "Lightning Hunt",
             fontWeight = FontWeight.Light,
-            fontSize = 18.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(8.dp)
+            fontSize = 18.sp,
+        )
+        Icon(
+            painter = painterResource(id = R.drawable.arrowup), contentDescription = null,
+            modifier = Modifier
+                .padding(16.dp).align(BottomEnd)
         )
 
+    }
     }
 }
 
@@ -409,7 +471,7 @@ fun SearchBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(vertical = 5.dp, horizontal = 16.dp)
             .background(
                 color = if (isSearchExpanded) Color.White else Color.Transparent,
                 shape = RoundedCornerShape(28.dp)
@@ -450,7 +512,6 @@ fun SearchBar(
                 ),
                 keyboardActions = KeyboardActions(
                     onSearch = {
-                        /* Handles search button click */
                         focusManager.clearFocus(true)
                     }
                 ),
@@ -473,14 +534,13 @@ fun SearchBar(
             },
             modifier = Modifier
                 .padding(end = 16.dp)
-                .size(32.dp)
                 .rotate(if (isSearchExpanded) 1f else 360f)
         ) {
             Icon(
                 imageVector = if (isSearchExpanded) Icons.Default.Clear else Icons.Default.Search,
                 contentDescription = "Search",
                 tint = if (isSearchExpanded) Color.Black else Color.White,
-                modifier = Modifier.size(42.dp)
+                modifier = Modifier.size(32.dp)
             )
         }
     }

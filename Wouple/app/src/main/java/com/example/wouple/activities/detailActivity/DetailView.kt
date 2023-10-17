@@ -46,11 +46,15 @@ import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark20
+import com.example.wouple.ui.theme.Northern
 import com.example.wouple.ui.theme.PagerColor
 import com.example.wouple.ui.theme.Spir
 import com.example.wouple.ui.theme.Spiro
 import com.example.wouple.ui.theme.Whitehis
 import com.example.wouple.ui.theme.Yellow20
+import com.example.wouple.ui.theme.some
+import com.example.wouple.ui.theme.vintage
+import com.example.wouple.ui.theme.vintage2
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -323,14 +327,14 @@ fun HourlyForecastView(temp: TemperatureResponse) {
                         2, 3 -> WeatherCondition.CLOUDY
                         51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> WeatherCondition.RAINY
                         71, 73, 75, 77, 85, 86 -> WeatherCondition.SNOWY
-                        else -> WeatherCondition.SUNNY // Sets a default weather condition in case of an unknown code
+                        else -> WeatherCondition.SUNNY
                     }
                     Hours(time, temperature, hourlyWeatherCondition)
                 }
                 if (!isDaytime) {
                     val hourlyWeatherConditionNight = when (temp.hourly.weathercode[index]) {
                         0, 1 -> WeatherCondition.CLEARNIGHT
-                        2, 3 -> WeatherCondition.CLOUDYNIGHT
+                        2, 3 -> WeatherCondition.CLOUDY
                         51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> WeatherCondition.RAINYNIGHT
                         else -> {
                             WeatherCondition.CLEARNIGHT
