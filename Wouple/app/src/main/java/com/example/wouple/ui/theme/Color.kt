@@ -31,7 +31,6 @@ val ColdBlue = Color(0xFF107DAC)
 val Red = Color(0xFF000000)
 val PagerColor = Color(0xFF2F2F2F)
 val some = Color(0xFFA5E2E3)
-val vintage = Color(0xFFEA717E)
-val vintage2 = Color(0xFF3A3A38)
+val vintage = Color(0xFF56CCF2)
 
 

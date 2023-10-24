@@ -8,6 +8,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -22,7 +23,8 @@ fun HorizontalWave(
     phase: MutableState<Float>,
     alpha: Float,
     amplitude: Float,
-    frequency: Float
+    frequency: Float,
+    gradientColors: List<Color>
 ) {
     Canvas(
         modifier = Modifier.fillMaxWidth(),
@@ -43,7 +45,7 @@ fun HorizontalWave(
 
             drawPath(
                 path = wavePath,
-                color = Color.White,
+                brush = Brush.horizontalGradient( colors = gradientColors),
                 alpha = alpha,
                 style = Fill
             )

@@ -9,10 +9,12 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.example.wouple.activities.detailActivity.SecondActivity
+import com.example.wouple.manager.WeatherManager
 import com.example.wouple.manager.WeatherManager.getCurrentWeather
 import com.example.wouple.manager.WeatherManager.getSearchedLocations
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
+import com.example.wouple.model.api.TemperatureUnit
 import com.example.wouple.preferences.LocationPref
 import com.example.wouple.ui.theme.WoupleTheme
 
@@ -20,10 +22,13 @@ class MainActivity : ComponentActivity() {
     private val temp: MutableState<TemperatureResponse?> = mutableStateOf(null)
     private val searchedLocations: MutableState<List<SearchedLocation>?> = mutableStateOf(null)
     private val searchedLocation: MutableState<SearchedLocation?> = mutableStateOf(null)
+    private val temperatureUnit: MutableState<TemperatureUnit> = mutableStateOf(TemperatureUnit("°F", "°C"))
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             WoupleTheme {
+                DropDownMenu(temperatureUnit = temperatureUnit.value)
                 if (temp.value == null) {
                     NoTemperatureView(
                         locations = searchedLocations.value,
@@ -41,9 +46,12 @@ class MainActivity : ComponentActivity() {
                                 })
                         }
                     )
+
+
                 } else {
                     FirstCardView(
                         temp = temp.value!!,
+                        temperatureUnit = temperatureUnit.value,
                         locations = searchedLocations.value,
                         onLocationButtonClicked = { location ->
                             onLocationButtonClicked(location)
@@ -77,7 +85,8 @@ class MainActivity : ComponentActivity() {
             location = location,
             onSuccessCall = { temperature ->
                 temp.value = temperature
-            }
+            },
+            unit = temperatureUnit.value
         )
         searchedLocations.value = null
     }
@@ -86,9 +95,14 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         searchedLocation.value = LocationPref.getSearchedLocation(this)
-        getCurrentWeather(this, searchedLocation.value) {
-            temp.value = it
-        }
+        getCurrentWeather(
+            context = this,
+            location = searchedLocation.value,
+            onSuccessCall = { temperature ->
+                temp.value = temperature
+            },
+            unit = temperatureUnit.value
+        )
     }
 }
 

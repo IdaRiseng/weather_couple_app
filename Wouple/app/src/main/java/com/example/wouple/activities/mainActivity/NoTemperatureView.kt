@@ -43,7 +43,7 @@ fun NoTemperatureView(
     onSearch: (String) -> Unit,
     onLocationButtonClicked: (SearchedLocation) -> Unit,
     searchedLocation: MutableState<SearchedLocation?>,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -60,19 +60,22 @@ fun NoTemperatureView(
                 phase = rememberPhaseState(0f),
                 alpha = 1f,
                 amplitude = 50f,
-                frequency = 0.5f
+                frequency = 0.5f,
+                gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
             )
             HorizontalWave(
                 phase = rememberPhaseState(15f),
                 alpha = 0.5f,
                 amplitude = 80f,
-                frequency = 0.3f
+                frequency = 0.3f,
+                gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
             )
             HorizontalWave(
                 phase = rememberPhaseState(10f),
                 alpha = 0.2f,
                 amplitude = 40f,
-                frequency = 0.6f
+                frequency = 0.6f,
+                gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
             )
         }
         Column(

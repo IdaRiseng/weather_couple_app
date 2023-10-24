@@ -20,12 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -46,16 +43,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomEnd
 import androidx.compose.ui.Alignment.Companion.Center
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
-import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Unspecified
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -77,13 +74,9 @@ import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
+import com.example.wouple.model.api.TemperatureUnit
 import com.example.wouple.ui.theme.Dark20
-import com.example.wouple.ui.theme.Northern
 import com.example.wouple.ui.theme.Spiro
-import com.example.wouple.ui.theme.Whitehis
-import com.example.wouple.ui.theme.some
-import com.example.wouple.ui.theme.vintage
-import com.example.wouple.ui.theme.vintage2
 
 
 /*@Preview(showBackground = true)
@@ -114,7 +107,8 @@ fun FirstCardView(
     searchedLocation: MutableState<SearchedLocation?>,
     onLocationButtonClicked: (SearchedLocation) -> Unit,
     onDetailsButtonClicked: (TemperatureResponse) -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    temperatureUnit: TemperatureUnit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -128,7 +122,7 @@ fun FirstCardView(
             contentAlignment = Alignment.BottomCenter
         ) {
             Column(
-                modifier = Modifier.padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 32.dp),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -149,7 +143,7 @@ fun FirstCardView(
                                         onLocationButtonClicked(location)
                                     },
                                 elevation = 4.dp,
-                                backgroundColor = Color.White
+                                backgroundColor = White
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -160,7 +154,7 @@ fun FirstCardView(
                                     Icon(
                                         painter = painterResource(id = R.drawable.pin),
                                         contentDescription = null,
-                                        tint = Color.Red
+                                        tint = Unspecified
                                     )
                                     getProperDisplayName(location.display_name)?.let {
                                         Text(
@@ -179,7 +173,7 @@ fun FirstCardView(
                     text = getProperDisplayName(searchedLocation.value?.display_name) ?: "N/D",
                     fontWeight = FontWeight.Thin,
                     textAlign = TextAlign.Center,
-                    fontSize = 55.sp,
+                    fontSize = 50.sp,
                     color = Color.White,
                 )
                 Text(
@@ -188,10 +182,9 @@ fun FirstCardView(
                         .toString() + temp.hourly_units.temperature_2m[0],
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Thin,
-                    fontSize = 70.sp,
+                    fontSize = 50.sp,
                     color = Color.White,
                 )
-
                 val todayWeatherConditions = when (temp.current_weather.weathercode) {
                     0, 1 -> WeatherCondition.SUNNY
                     2, 3 -> WeatherCondition.CLOUDY
@@ -207,39 +200,64 @@ fun FirstCardView(
                         .padding(bottom = 8.dp, end = 8.dp),
                     alignment = Alignment.BottomCenter
                 )
-                Row(modifier = Modifier.padding(bottom = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween)
+                Row(
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                )
                 {
+                    /*     IconButton(
+                             modifier = Modifier.padding(bottom = 16.dp),
+                             onClick = { onDetailsButtonClicked(temp) }
+                         ) {
+                             Icon(
+                                 painter = painterResource(id = R.drawable.arrowforward),
+                                 contentDescription = null,
+                                 tint = Color.White
+                             )
+                         }*/
                     /*  Button(
-                          modifier = Modifier.padding(bottom = 16.dp),
-                          shape = CircleShape,
-                          colors = ButtonDefaults.buttonColors(Whitehis),
-                          onClick = {
-                              onDetailsButtonClicked(temp)
-                          }) {
-                          Text(text = "Forecast details")
-                      }*/
+                            modifier = Modifier.padding(bottom = 16.dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(Whitehis),
+                            onClick = {
+                                onDetailsButtonClicked(temp)
+                            }) {
+                            Text(text = "Forecast details")
+                        }*/
+                    DropDownMenu(temperatureUnit)
                     Spacer(modifier = Modifier.weight(1f))
-                    DropDownMenu()
+                    IconButton(
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        onClick = { onDetailsButtonClicked(temp) }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.arrowforward),
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
                 }
             }
             HorizontalWave(
                 phase = rememberPhaseState(0f),
                 alpha = 1f,
                 amplitude = 50f,
-                frequency = 0.5f
+                frequency = 0.5f,
+                gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
             )
             HorizontalWave(
                 phase = rememberPhaseState(15f),
                 alpha = 0.5f,
                 amplitude = 80f,
-                frequency = 0.3f
+                frequency = 0.3f,
+                gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
             )
             HorizontalWave(
                 phase = rememberPhaseState(10f),
                 alpha = 0.2f,
                 amplitude = 40f,
-                frequency = 0.6f
+                frequency = 0.6f,
+                gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
             )
         }
         Box(
@@ -263,8 +281,10 @@ fun FirstCardView(
 }
 
 @Composable
-fun DropDownMenu() {
+fun DropDownMenu(temperatureUnit: TemperatureUnit) {
     var isExpanded by remember { mutableStateOf(false) }
+    var selectedTemperatureUnit by remember { mutableStateOf(TemperatureUnit("Fahrenheit", "Celsius")) }
+
     Box(modifier = Modifier.padding(start = 16.dp)) {
         IconButton(
             onClick = { isExpanded = !isExpanded }
@@ -277,16 +297,26 @@ fun DropDownMenu() {
         DropdownMenu(expanded = isExpanded,
             onDismissRequest = { isExpanded = false })
         {
-            DropdownMenuItem(onClick = { /*TODO*/ })
-            {
-                Column {
-                    Text(text = "Celcius C")
-                    Text(text = "Fahreneight F")
+            DropdownMenuItem(
+                onClick = {
+                    selectedTemperatureUnit = TemperatureUnit("Fahrenheit", "Celsius")
+                    isExpanded = false
                 }
+            ) {
+                Text("Fahrenheit")
+            }
+            DropdownMenuItem(
+                onClick = {
+                    selectedTemperatureUnit = TemperatureUnit("Celsius", "Fahrenheit")
+                    isExpanded = false
+                }
+            ) {
+                Text("Celsius")
             }
         }
     }
 }
+
 
 private fun getProperDisplayName(displayName: String?) = displayName?.split(",")?.firstOrNull()
 
@@ -321,18 +351,19 @@ private fun TodayWeatherCard(
                 modifier = Modifier.fillMaxSize()
             )
             Text(
-                text = "Weather Radar",
+                text = "World Weather Map",
                 fontWeight = FontWeight.Light,
+                color = Dark20,
                 fontSize = 18.sp,
                 modifier = Modifier
                     .padding(8.dp)
                     .align(Center)
             )
             Icon(
-                painter = painterResource(id = R.drawable.arrowup), contentDescription = null,
+                painter = painterResource(id = R.drawable.pin), contentDescription = null,
                 modifier = Modifier
                     .align(BottomEnd)
-                    .padding(16.dp)
+                    .padding(16.dp), tint = Unspecified
             )
         }
     }
@@ -439,24 +470,27 @@ fun ClickableCardDemo(searchedLocation: SearchedLocation) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp), contentAlignment = Center) {
-        Image(
-            painter = painterResource(id = R.drawable.map),
-            contentDescription = null, contentScale = ContentScale.Crop
-        )
-        Text( modifier = Modifier.padding(8.dp),
-            text = "Lightning Hunt",
-            fontWeight = FontWeight.Light,
-            textAlign = TextAlign.Center,
-            fontSize = 18.sp,
-        )
-        Icon(
-            painter = painterResource(id = R.drawable.arrowup), contentDescription = null,
-            modifier = Modifier
-                .padding(16.dp).align(BottomEnd)
-        )
+                .height(200.dp), contentAlignment = Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.map),
+                contentDescription = null, contentScale = ContentScale.Crop
+            )
+            Text(
+                modifier = Modifier.padding(8.dp),
+                text = "Lightning Hunt",
+                fontWeight = FontWeight.Light,
+                textAlign = TextAlign.Center,
+                fontSize = 18.sp,
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.pin), contentDescription = null,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(BottomEnd), tint = Unspecified
+            )
 
-    }
+        }
     }
 }
 
@@ -468,12 +502,16 @@ fun SearchBar(
     var isSearchExpanded by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     var query by remember { mutableStateOf("") }
+    val gradient = Brush.horizontalGradient(
+        colors = if (isSearchExpanded) listOf(Color(0xFF2F80ED), Color(0xFF56CCF2))
+        else listOf(Color.Transparent, Color.Transparent)
+    )
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp, horizontal = 16.dp)
             .background(
-                color = if (isSearchExpanded) Color.White else Color.Transparent,
+                brush = gradient,
                 shape = RoundedCornerShape(28.dp)
             ),
         verticalAlignment = CenterVertically,
@@ -503,7 +541,7 @@ fun SearchBar(
                     Text(
                         modifier = Modifier.padding(start = 16.dp),
                         text = "Search a city or airport",
-                        color = Color.Gray
+                        color = Color.Black.copy(alpha = 0.7f)
                     )
                 },
                 keyboardOptions = KeyboardOptions(
@@ -545,247 +583,3 @@ fun SearchBar(
         }
     }
 }
-
-/*@Composable
-fun TildeScreen(
-    temp: TemperatureResponse,
-    onDetailsButtonClicked: (TemperatureResponse) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 350.dp),
-        Alignment.TopCenter
-    ) {
-        // Draw the bottom half in white color
-        Column(
-            modifier = Modifier
-                .background(Color.White)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically)
-            {
-
-                Text(
-                    text = "OSLO",
-                    fontSize = 40.sp,
-                    color = Dark20,
-                )
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Button(
-                modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
-                shape = CircleShape,
-                onClick = {
-                    onDetailsButtonClicked(temp)
-                }) {
-                Text(text = "Weather details")
-            }
-        }
-
-        // Draw the tilde sign (top half) in white color
-        Canvas(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            val tildePath = Path()
-            val curveWidth = size.width / 8
-            val curveHeight = size.height / -12
-
-            // Start from the top-left corner of the canvas
-            tildePath.moveTo(-30f, 0f)
-
-            // First curve (bottom)
-            tildePath.cubicTo(
-                -curveWidth, -curveHeight,
-                curveWidth * -1, curveHeight * 8,
-                curveWidth * 11, 12f
-            )
-
-            // Draw the tilde sign in white color
-            drawPath(
-                path = tildePath,
-                brush = SolidColor(Color.White)
-            )
-        }
-    }
-}*/
-/*
-@Composable
-fun SetLocationTextField(onSearch: (String) -> Unit) {
-    var text by remember { mutableStateOf(("")) }
-    val focusManager = LocalFocusManager.current
-
-
-    TextField(
-        value = text.uppercase(),
-        shape = RoundedCornerShape(20.dp),
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = Spiro,
-            unfocusedBorderColor = Bubbles.copy(alpha = 0.6f),
-            textColor = Corn
-        ),
-        singleLine = true,
-        keyboardOptions = KeyboardOptions.Default.copy(
-            imeAction = ImeAction.Search
-        ),
-        keyboardActions = KeyboardActions(
-            onSearch = { focusManager.clearFocus() }
-        ),
-        onValueChange = { newText ->
-            text = newText
-            onSearch(text)
-        },
-        placeholder = {
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                color = Bubbles,
-                text = "Set Location"
-            )
-        },
-        modifier = Modifier.padding(bottom = 8.dp)
-    )
-}
-
-@Composable
-fun TimeView() {
-    val xxx = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(4.dp)
-            .background(Dark10, shape = RoundedCornerShape(20.dp)),
-        horizontalAlignment = CenterHorizontally
-    ) {
-        Text(
-            modifier = Modifier
-                .padding(top = 20.dp),
-            text = "TIME",
-            color = Corn.copy(alpha = 0.9f),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            modifier = Modifier,
-            fontSize = 45.sp,
-            text = xxx.toString(),
-            color = Bubbles.copy(alpha = 1f),
-        )
-        Icon(
-            painter = painterResource(id = R.drawable.ic_time_foreground),
-            contentDescription = "",
-            modifier = Modifier
-                .size(40.dp)
-                .alpha(0.9f),
-            tint = Tangerine
-        )
-    }
-}
-
-
-@Composable
-fun TemperatureView(temp: TemperatureResponse) {
-    val activity = LocalContext.current
-    Column(modifier = Modifier
-        .clickable {
-            val intent = Intent(activity, SecondActivity::class.java)
-            intent.putExtra("temp", temp)
-            activity.startActivity(intent)
-        }
-        .padding(4.dp)
-        .fillMaxSize()
-        .background(Dark10, RoundedCornerShape(20.dp)),
-        horizontalAlignment = CenterHorizontally
-    ) {
-        Text(
-            modifier = Modifier
-                .padding(top = 20.dp),
-            text = "TEMPERATURE",
-            color = Corn.copy(alpha = 0.9f),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Row {
-            Text(
-                fontSize = 50.sp,
-                text = temp.current_weather.temperature.toInt().toString(),
-                color = Bubbles.copy(alpha = 1f),
-                modifier = Modifier.padding(start = 15.dp)
-            )
-            Text(
-                fontSize = 32.sp,
-                text = temp.hourly_units.temperature_2m,
-                color = Bubbles.copy(alpha = 1f),
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
-        Icon(
-            painter = painterResource(id = R.drawable.thermo), contentDescription = "",
-            modifier = Modifier
-                .alpha(0.9f)
-                .padding(bottom = 4.dp)
-                .size(50.dp),
-            tint = Tangerine
-        )
-    }
-}
-
-@Composable
-fun WindView(temp: TemperatureResponse) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(4.dp)
-            .background(Dark10, RoundedCornerShape(20.dp)),
-        horizontalAlignment = CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            modifier = Modifier
-                .padding(top = 10.dp),
-            text = "WIND",
-            color = Corn.copy(alpha = 0.9f),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            modifier = Modifier,
-            fontSize = 30.sp,
-            text = temp.current_weather.windspeed.toInt().toString() +" " + temp.hourly_units.windspeed_10m,
-            color = Bubbles.copy(alpha = 1f)
-        )
-        Icon(
-            painter = painterResource(id = R.drawable.wind), contentDescription = "",
-            modifier = Modifier
-                .alpha(0.9f)
-                .size(38.dp)
-                .padding(top = 6.dp, bottom = 10.dp),
-            tint = Tangerine
-        )
-    }
-}
-
-@Composable
-fun ImageWeatherView(weatherImage: Int) {
-    val activity = LocalContext.current
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(4.dp)
-            .background(Dark10, RoundedCornerShape(20.dp))
-    ) {
-        Image(painter = painterResource(id = weatherImage),
-            contentDescription = "",
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .clickable {
-                    val intent = Intent(activity, SecondActivity::class.java)
-                    activity.startActivity(intent)
-                }
-                .fillMaxSize()
-                .padding(16.dp)
-        )
-    }
-}
- */

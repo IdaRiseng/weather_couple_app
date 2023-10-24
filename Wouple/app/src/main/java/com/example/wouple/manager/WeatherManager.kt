@@ -6,6 +6,7 @@ import com.example.wouple.BuildConfig
 import com.example.wouple.model.api.ApiRequest
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
+import com.example.wouple.model.api.TemperatureUnit
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -39,7 +40,8 @@ object WeatherManager {
     fun getCurrentWeather(
         context: Context,
         location: SearchedLocation?,
-        onSuccessCall: (TemperatureResponse?) -> Unit
+        onSuccessCall: (TemperatureResponse?) -> Unit,
+        unit: TemperatureUnit
     ) {
         if (location == null) {
             onSuccessCall(null)
@@ -48,32 +50,38 @@ object WeatherManager {
         if (BuildConfig.DEBUG) {
             getDataFromMock(onSuccessCall)
         } else {
-            fetchDataFromBackend(context, location, onSuccessCall)
+            fetchDataFromBackend(context, location, onSuccessCall,unit)
         }
     }
 
     private fun getDataFromMock(onSuccessCall: (TemperatureResponse) -> Unit) {
         onSuccessCall(TemperatureResponse.getMockInstance())
     }
+
     private fun fetchDataFromBackend(
         context: Context,
         location: SearchedLocation,
         onSuccessCall: (TemperatureResponse) -> Unit,
+        unit: TemperatureUnit
     ) {
         val api = getApiBuilder(OPEN_METEO_BASE_URL)
-        api.getTemperature(location.lat, location.lon)
-            .enqueue(object : Callback<TemperatureResponse> {
-                override fun onFailure(call: Call<TemperatureResponse>, t: Throwable) {
-                    Toast.makeText(context, t.message, Toast.LENGTH_LONG).show()
-                }
 
-                override fun onResponse(
-                    call: Call<TemperatureResponse>,
-                    response: Response<TemperatureResponse>
-                ) {
-                    response.body()?.let { onSuccessCall(it) }
-                }
-            })
+        api.getTemperature(
+            location.lat,
+            location.lon,
+           temperature_unit = unit.celsius
+        ).enqueue(object : Callback<TemperatureResponse> {
+            override fun onFailure(call: Call<TemperatureResponse>, t: Throwable) {
+                Toast.makeText(context, t.message, Toast.LENGTH_LONG).show()
+            }
+
+            override fun onResponse(
+                call: Call<TemperatureResponse>,
+                response: Response<TemperatureResponse>
+            ) {
+                response.body()?.let { onSuccessCall(it) }
+            }
+        })
     }
 
     private fun getApiBuilder(baseUrl: String) =
