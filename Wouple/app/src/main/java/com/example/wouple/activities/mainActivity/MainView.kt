@@ -1,6 +1,14 @@
 package com.example.wouple.activities.mainActivity
 
+import android.view.animation.OvershootInterpolator
+import android.window.SplashScreen
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
@@ -20,21 +28,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.RadioButton
+import androidx.compose.material.RadioButtonColors
+import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,13 +59,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomEnd
 import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.Gray
+import androidx.compose.ui.graphics.Color.Companion.LightGray
+import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.Color.Companion.Unspecified
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
@@ -60,23 +83,36 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.wouple.R
-import com.example.wouple.activities.detailActivity.WeatherCondition
+import com.example.wouple.activities.detailActivity.SecondCardView
 import com.example.wouple.activities.lightningMap.LightningMapActivity
 import com.example.wouple.activities.rainMap.WeatherRadarWebView
-import com.example.wouple.elements.GetWeatherCodes
+import com.example.wouple.activities.splashScreen.Navigation
+import com.example.wouple.activities.splashScreen.SplashScreen
 import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
-import com.example.wouple.model.api.TemperatureUnit
+import com.example.wouple.ui.theme.Dark10
 import com.example.wouple.ui.theme.Dark20
 import com.example.wouple.ui.theme.Spiro
+
 
 
 /*@Preview(showBackground = true)
@@ -98,7 +134,6 @@ fun DefaultPreview() {
         FirstCardView(temperature, temperature)
     }
 }*/
-
 @Composable
 fun FirstCardView(
     temp: TemperatureResponse,
@@ -108,22 +143,21 @@ fun FirstCardView(
     onLocationButtonClicked: (SearchedLocation) -> Unit,
     onDetailsButtonClicked: (TemperatureResponse) -> Unit,
     onClose: () -> Unit,
-    temperatureUnit: TemperatureUnit
+    onTemperatureUnitChanged: (String) -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
     ) {
         Box(
             modifier = Modifier
                 .fillMaxHeight(0.5f)
                 .fillMaxWidth()
-                .background(Dark20)
+                .background(Dark10)
                 .padding(bottom = 18.dp),
-            contentAlignment = Alignment.BottomCenter
         ) {
             Column(
-                modifier = Modifier.padding(bottom = 32.dp),
-                verticalArrangement = Arrangement.Top,
+                modifier = Modifier.padding(4.dp),
+                verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 SearchBar(onSearch, onClose)
@@ -156,14 +190,12 @@ fun FirstCardView(
                                         contentDescription = null,
                                         tint = Unspecified
                                     )
-                                    getProperDisplayName(location.display_name)?.let {
-                                        Text(
-                                            text = it,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 16.sp,
-                                            color = Color.Black
-                                        )
-                                    }
+                                    Text(
+                                        text = location.display_name,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = Color.Black
+                                    )
                                 }
                             }
                         }
@@ -174,104 +206,80 @@ fun FirstCardView(
                     fontWeight = FontWeight.Thin,
                     textAlign = TextAlign.Center,
                     fontSize = 50.sp,
-                    color = Color.White,
+                    color = White,
                 )
                 Text(
-                    modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
+                    modifier = Modifier.padding(start = 12.dp),
                     text = temp.current_weather.temperature.toInt()
                         .toString() + temp.hourly_units.temperature_2m[0],
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Thin,
                     fontSize = 50.sp,
-                    color = Color.White,
+                    color = White,
                 )
-                val todayWeatherConditions = when (temp.current_weather.weathercode) {
-                    0, 1 -> WeatherCondition.SUNNY
-                    2, 3 -> WeatherCondition.CLOUDY
-                    51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> WeatherCondition.RAINY
-                    71, 73, 75, 77, 85, 86 -> WeatherCondition.SNOWY
-                    else -> WeatherCondition.SUNNY
-                }
-                Image(
-                    painter = painterResource(id = todayWeatherConditions.imageResourceId),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(60.dp)
-                        .padding(bottom = 8.dp, end = 8.dp),
-                    alignment = Alignment.BottomCenter
-                )
-                Row(
-                    modifier = Modifier.padding(bottom = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                )
-                {
-                    /*     IconButton(
-                             modifier = Modifier.padding(bottom = 16.dp),
-                             onClick = { onDetailsButtonClicked(temp) }
-                         ) {
-                             Icon(
-                                 painter = painterResource(id = R.drawable.arrowforward),
-                                 contentDescription = null,
-                                 tint = Color.White
-                             )
-                         }*/
-                    /*  Button(
-                            modifier = Modifier.padding(bottom = 16.dp),
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(Whitehis),
-                            onClick = {
-                                onDetailsButtonClicked(temp)
-                            }) {
-                            Text(text = "Forecast details")
-                        }*/
-                    DropDownMenu(temperatureUnit)
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(
-                        modifier = Modifier.padding(bottom = 16.dp),
-                        onClick = { onDetailsButtonClicked(temp) }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.arrowforward),
-                            contentDescription = null,
-                            tint = Color.White
-                        )
+                Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                when (temp.current_weather.weathercode) {
+                    0, 1 -> LottieAnimationSun()
+                    2 -> LottieAnimationPartlyCloudy()
+                    3 -> LottieAnimationCloud()
+                    51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82 -> LottieAnimationRain()
+                    71, 73, 75, 77, 85, 86 -> LottieAnimationSnow()
+                    else -> {
+                        LottieAnimationSun()
                     }
                 }
+                Row(
+                    modifier = Modifier.padding(bottom = 4.dp),
+                    horizontalArrangement = Arrangement.Center
+                )
+                {
+                    DropDownMenu(onTemperatureUnitChanged)
+                    Spacer(modifier = Modifier.padding(28.dp))
+                    DetailButton {
+                        onDetailsButtonClicked(temp)
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
-            HorizontalWave(
-                phase = rememberPhaseState(0f),
-                alpha = 1f,
-                amplitude = 50f,
-                frequency = 0.5f,
-                gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
-            )
-            HorizontalWave(
-                phase = rememberPhaseState(15f),
-                alpha = 0.5f,
-                amplitude = 80f,
-                frequency = 0.3f,
-                gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
-            )
-            HorizontalWave(
-                phase = rememberPhaseState(10f),
-                alpha = 0.2f,
-                amplitude = 40f,
-                frequency = 0.6f,
-                gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
-            )
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                HorizontalWave(
+                    phase = rememberPhaseState(0f),
+                    alpha = 1f,
+                    amplitude = 50f,
+                    frequency = 0.5f,
+                    gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
+                )
+                HorizontalWave(
+                    phase = rememberPhaseState(15f),
+                    alpha = 0.5f,
+                    amplitude = 80f,
+                    frequency = 0.3f,
+                    gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
+                )
+                HorizontalWave(
+                    phase = rememberPhaseState(10f),
+                    alpha = 0.2f,
+                    amplitude = 40f,
+                    frequency = 0.6f,
+                    gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
+                )
+            }
         }
         Box(
             modifier = Modifier
                 .fillMaxHeight(0.5f)
-                .background(Color.White)
+                .background(White)
                 .padding(top = 16.dp)
         ) {
-            TodayWeatherCard(temp, onDetailsButtonClicked)
+            TodayWeatherCard()
         }
         Box(
             modifier = Modifier
                 .fillMaxHeight(1f)
-                .background(Color.White)
+                .background(White)
                 .padding(bottom = 16.dp),
             contentAlignment = Center
         ) {
@@ -281,58 +289,221 @@ fun FirstCardView(
 }
 
 @Composable
-fun DropDownMenu(temperatureUnit: TemperatureUnit) {
-    var isExpanded by remember { mutableStateOf(false) }
-    var selectedTemperatureUnit by remember { mutableStateOf(TemperatureUnit("Fahrenheit", "Celsius")) }
+fun LottieAnimationSun() {
+    val isPlaying by remember { mutableStateOf(true) }
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.sunlottieanimation))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        isPlaying = isPlaying,
+        iterations = LottieConstants.IterateForever // makes the animation keeps playing constantly
+    )
+    LottieAnimation(
+        composition = composition,
+        progress = progress,
+        modifier = Modifier.size(50.dp)
+    )
+}
 
-    Box(modifier = Modifier.padding(start = 16.dp)) {
+@Composable
+fun LottieAnimationSnow() {
+    val isPlaying by remember { mutableStateOf(true) }
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottiesnowanimation))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        isPlaying = isPlaying,
+        iterations = LottieConstants.IterateForever // makes the animation keeps playing constantly
+    )
+    LottieAnimation(
+        composition = composition,
+        progress = progress,
+        modifier = Modifier.size(50.dp)
+    )
+}
+
+@Composable
+fun LottieAnimationPartlyCloudy() {
+    val isPlaying by remember { mutableStateOf(true) }
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.partlycloudylottie))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        isPlaying = isPlaying,
+        iterations = LottieConstants.IterateForever // makes the animation keeps playing constantly
+    )
+    LottieAnimation(
+        composition = composition,
+        progress = progress,
+        modifier = Modifier.size(50.dp)
+    )
+}
+
+@Composable
+fun LottieAnimationRain() {
+    val isPlaying by remember { mutableStateOf(true) }
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottierain))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        isPlaying = isPlaying,
+        iterations = LottieConstants.IterateForever // makes the animation keeps playing constantly
+    )
+    LottieAnimation(
+        composition = composition,
+        progress = progress,
+        modifier = Modifier.size(55.dp)
+    )
+}
+
+@Composable
+fun LottieAnimationCloud() {
+    val isPlaying by remember { mutableStateOf(true) }
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.cloudlottie))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        isPlaying = isPlaying,
+        iterations = LottieConstants.IterateForever // makes the animation keeps playing constantly
+    )
+    LottieAnimation(
+        composition = composition,
+        progress = progress,
+        modifier = Modifier.size(55.dp)
+    )
+}
+
+@Composable
+fun DetailButton(onDetailsButtonClicked: () -> Unit) {
+    var isPressed by remember { mutableStateOf(false) }
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val colorTransition by infiniteTransition.animateColor(
+        initialValue = Color(0xFF2F80ED),
+        targetValue = Color(0xFF56CCF2),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    Button(
+        modifier = Modifier.padding(bottom = 16.dp),
+        shape = CircleShape,
+        onClick = {
+            isPressed = !isPressed
+            onDetailsButtonClicked()
+        },
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = if (isPressed) {
+                colorTransition
+            } else {
+                Spiro
+            }
+        )
+    ) {
+        Text(text = "Forecast Details")
+    }
+}
+
+
+@Composable
+fun DropDownMenu(onTemperatureUnitChanged: (String) -> Unit) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var selectedTemperatureUnit by remember { mutableStateOf("") }
+    Box(
+        modifier = Modifier
+            .padding(start = 16.dp)
+            .clip(RoundedCornerShape(32.dp))
+    ) {
         IconButton(
             onClick = { isExpanded = !isExpanded }
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.menuicon), contentDescription = null,
-                modifier = Modifier.size(30.dp), tint = Color.White,
+                modifier = Modifier.size(30.dp), tint = White,
             )
         }
-        DropdownMenu(expanded = isExpanded,
-            onDismissRequest = { isExpanded = false })
+        DropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = { isExpanded = false }
+        )
         {
-            DropdownMenuItem(
-                onClick = {
-                    selectedTemperatureUnit = TemperatureUnit("Fahrenheit", "Celsius")
-                    isExpanded = false
-                }
+           CustomRadioButton(
+                text = "Fahrenheit",
+                isChecked = selectedTemperatureUnit == "fahrenheit"
             ) {
-                Text("Fahrenheit")
+                selectedTemperatureUnit = "fahrenheit"
+                onTemperatureUnitChanged("fahrenheit")
+                isExpanded = false
             }
-            DropdownMenuItem(
-                onClick = {
-                    selectedTemperatureUnit = TemperatureUnit("Celsius", "Fahrenheit")
-                    isExpanded = false
-                }
+            CustomRadioButton(
+                text = "Celsius",
+                isChecked = selectedTemperatureUnit == "celsius"
             ) {
-                Text("Celsius")
+                selectedTemperatureUnit = "celsius"
+                onTemperatureUnitChanged("celsius")
+                isExpanded = false
             }
         }
     }
 }
 
+@Composable
+fun CustomRadioButton(
+    text: String,
+    isChecked: Boolean,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectable(
+                selected = isChecked,
+                onClick = onClick
+            )
+            .padding(4.dp)
+            .padding(horizontal = 4.dp)
+            .background(White),
+        elevation = 4.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .selectable(
+                    selected = isChecked,
+                    onClick = onClick
+                )
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                modifier = Modifier.padding(end = 8.dp),
+                text = text,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Light
+            )
+            RadioButton(
+                selected = isChecked,
+                colors = RadioButtonDefaults.colors(selectedColor = Spiro),
+                onClick = onClick,
+                modifier = Modifier
+                    .size(16.dp)
+                    .padding(top = 5.dp)
+            )
+        }
+    }
+}
 
 private fun getProperDisplayName(displayName: String?) = displayName?.split(",")?.firstOrNull()
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun TodayWeatherCard(
-    temp: TemperatureResponse,
-    onDetailsButtonClicked: (TemperatureResponse) -> Unit,
-) {
+private fun TodayWeatherCard() {
 
     var showDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .clickable {
+                showDialog = true
+            },
         shape = RoundedCornerShape(16.dp),
         elevation = 4.dp,
     ) {
@@ -340,30 +511,39 @@ private fun TodayWeatherCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .clickable {
-                    showDialog = true
-                }
+                .background(LightGray.copy(alpha = 0.3f))
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(CenterStart)
+            ) {
+                Spacer(modifier = Modifier.height(40.dp))
+                Text(
+                    modifier = Modifier.padding(top = 16.dp),
+                    text = "World Weather Forecast",
+                    fontWeight = FontWeight.Medium,
+                    color = Dark20,
+                    fontSize = 18.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp)) // Add some space between the two texts
+                Text(
+                    text = "Check weather forecast around the world with the interactive map",
+                    fontWeight = FontWeight.Light,
+                    color = Dark20,
+                    fontSize = 14.sp
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.map),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-            Text(
-                text = "World Weather Map",
-                fontWeight = FontWeight.Light,
-                color = Dark20,
-                fontSize = 18.sp,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Center)
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.pin), contentDescription = null,
-                modifier = Modifier
-                    .align(BottomEnd)
-                    .padding(16.dp), tint = Unspecified
             )
         }
     }
@@ -374,81 +554,10 @@ private fun TodayWeatherCard(
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Center
             ) {
                 WeatherRadarWebView(url = "https://map.worldweatheronline.com/temperature?lat=36.884804&lng=30.704044")
             }
-        }
-    }
-}
-
-
-@Composable
-private fun CardInformation(temp: TemperatureResponse) {
-    val weatherDesc = GetWeatherCodes(temp)
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.Start
-    ) {
-        Row {
-            val day = 0
-            val forecastMini = temp.daily.temperature_2m_min[day].toInt().toString()
-
-            Text(
-                text = forecastMini + temp.daily_units.temperature_2m_min[0],
-                fontWeight = FontWeight.Thin,
-                fontSize = 36.sp,
-                color = Color.Black
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.arrowdropdown), contentDescription = null,
-                modifier = Modifier
-                    .size(40.dp)
-                    .align(CenterVertically), tint = Dark20.copy(alpha = 0.8f)
-            )
-        }
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            modifier = Modifier.padding(end = 8.dp),
-            text = weatherDesc,
-            fontSize = 24.sp,
-            color = Color.Black
-        )
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.End
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End
-        )
-        {
-            val day = 0
-            val maximumDegree = temp.daily.temperature_2m_max[day].toInt().toString()
-            Icon(
-                painter = painterResource(id = R.drawable.arrowdropup), contentDescription = null,
-                modifier = Modifier.size(40.dp), tint = Dark20
-            )
-            Text(
-                text = maximumDegree + temp.daily_units.temperature_2m_max[0],
-                fontWeight = FontWeight.Thin,
-                fontSize = 36.sp,
-                color = Color.Black
-            )
         }
     }
 }
@@ -458,38 +567,52 @@ fun ClickableCardDemo(searchedLocation: SearchedLocation) {
     val context = LocalContext.current
     Card(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .padding(16.dp)
             .clickable {
                 context.startActivity(LightningMapActivity.newIntent(context, searchedLocation))
-            }
-            .padding(16.dp),
-        backgroundColor = Color.Black,
-        shape = RoundedCornerShape(20.dp),
-        elevation = 4.dp
+            },
+        shape = RoundedCornerShape(16.dp),
+        elevation = 4.dp,
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp), contentAlignment = Center
+                .height(200.dp)
+                .background(LightGray.copy(alpha = 0.3f))
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(CenterStart)
+            ) {
+                Spacer(modifier = Modifier.height(40.dp))
+                Text(
+                    modifier = Modifier,
+                    text = "Realtime Lightning Map",
+                    fontWeight = FontWeight.Medium,
+                    color = Dark20,
+                    fontSize = 18.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp)) // Add some space between the two texts
+                Text(
+                    text = "Check where lightnings occurs around the world",
+                    fontWeight = FontWeight.Light,
+                    color = Dark20,
+                    fontSize = 14.sp
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.map),
-                contentDescription = null, contentScale = ContentScale.Crop
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
             )
-            Text(
-                modifier = Modifier.padding(8.dp),
-                text = "Lightning Hunt",
-                fontWeight = FontWeight.Light,
-                textAlign = TextAlign.Center,
-                fontSize = 18.sp,
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.pin), contentDescription = null,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(BottomEnd), tint = Unspecified
-            )
-
         }
     }
 }
@@ -503,7 +626,7 @@ fun SearchBar(
     val focusManager = LocalFocusManager.current
     var query by remember { mutableStateOf("") }
     val gradient = Brush.horizontalGradient(
-        colors = if (isSearchExpanded) listOf(Color(0xFF2F80ED), Color(0xFF56CCF2))
+        colors = if (isSearchExpanded) listOf(White, Color(0xFF56CCF2))
         else listOf(Color.Transparent, Color.Transparent)
     )
     Row(
@@ -524,6 +647,7 @@ fun SearchBar(
         ) {
             TextField(
                 value = query,
+                maxLines = 1,
                 onValueChange = {
                     query = it
                     if (query.length >= 3) {
@@ -534,19 +658,20 @@ fun SearchBar(
                     .weight(1f)
                     .padding(start = 18.dp),
                 textStyle = TextStyle(
-                    color = Color.Black,
+                    color = Black,
                     fontSize = 18.sp,
                 ),
                 placeholder = {
                     Text(
                         modifier = Modifier.padding(start = 16.dp),
                         text = "Search a city or airport",
-                        color = Color.Black.copy(alpha = 0.7f)
+                        color = Black.copy(alpha = 0.7f)
                     )
                 },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Search,
-                    capitalization = KeyboardCapitalization.Characters
+                    capitalization = KeyboardCapitalization.Characters,
+                    keyboardType = KeyboardType.Text
                 ),
                 keyboardActions = KeyboardActions(
                     onSearch = {
@@ -554,14 +679,13 @@ fun SearchBar(
                     }
                 ),
                 colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
+                    backgroundColor = Transparent,
+                    focusedIndicatorColor = Transparent,
+                    unfocusedIndicatorColor = Transparent,
                     cursorColor = Spiro,
                 )
             )
         }
-
         IconButton(
             onClick = {
                 isSearchExpanded = !isSearchExpanded
@@ -571,13 +695,13 @@ fun SearchBar(
                 onClose()
             },
             modifier = Modifier
-                .padding(end = 16.dp)
+                .padding(end = 16.dp, bottom = if (isSearchExpanded) 0.dp else 8.dp)
                 .rotate(if (isSearchExpanded) 1f else 360f)
         ) {
             Icon(
                 imageVector = if (isSearchExpanded) Icons.Default.Clear else Icons.Default.Search,
                 contentDescription = "Search",
-                tint = if (isSearchExpanded) Color.Black else Color.White,
+                tint = if (isSearchExpanded) Color.Black else White,
                 modifier = Modifier.size(32.dp)
             )
         }

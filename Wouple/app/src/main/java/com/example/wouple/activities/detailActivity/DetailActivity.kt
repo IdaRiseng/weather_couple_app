@@ -1,6 +1,7 @@
 package com.example.wouple.activities.detailActivity
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.wouple.model.api.SearchedLocation
@@ -10,9 +11,21 @@ class SecondActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val location = intent.getParcelableExtra<SearchedLocation>("location")?: throw IllegalStateException("location is wrong")
-            val temp = intent.getParcelableExtra<TemperatureResponse>("temp")?: throw IllegalStateException("temp is wrong")
-             SecondCardView(temp, location)
+            val location = intent.getParcelableExtra<SearchedLocation>("location")
+            val temp = intent.getParcelableExtra<TemperatureResponse>("temp")
+
+            Log.d("SecondActivity", "Location: $location")
+            Log.d("SecondActivity", "Temperature: $temp")
+
+            if (location == null) {
+                throw IllegalStateException("location is missing or wrong")
+            }
+
+            if (temp == null) {
+                throw IllegalStateException("temp is missing or wrong")
+            }
+
+            SecondCardView(temp, location)
         }
     }
 }

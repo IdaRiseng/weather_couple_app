@@ -25,12 +25,13 @@ val Corn = Color(0xFFFFFAE0)
 val ButtonBlue = Color(0xFF1D71F2)
 val Tangerine = Color(0xFFFFCD00)
 val Northern = Color(0xFF04E2B7)
-val Pastel = Color(0xFFFF9B50)
+val Pastel = Color(0xFFFF9E58)
 val Spir = Color(0xFF11C3FD)
 val ColdBlue = Color(0xFF107DAC)
-val Red = Color(0xFF000000)
+val Somethingg = Color(0xFF1D1C1C)
 val PagerColor = Color(0xFF2F2F2F)
-val some = Color(0xFFA5E2E3)
-val vintage = Color(0xFF56CCF2)
+val some = Color(0xFF05C29D)
+val vintage = Color(0xFFF8C35F)
+
 
 

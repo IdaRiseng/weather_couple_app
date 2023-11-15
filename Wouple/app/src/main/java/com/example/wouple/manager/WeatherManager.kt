@@ -2,11 +2,11 @@ package com.example.wouple.manager
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.ui.text.toLowerCase
 import com.example.wouple.BuildConfig
 import com.example.wouple.model.api.ApiRequest
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
-import com.example.wouple.model.api.TemperatureUnit
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -20,7 +20,7 @@ object WeatherManager {
     fun getSearchedLocations(
         context: Context,
         address: String,
-        onSuccessCall: (List<SearchedLocation>) -> Unit
+        onSuccessCall: (List<SearchedLocation>) -> Unit,
     ) {
         val api = getApiBuilder(GEOCODE_BASE_URL)
         api.getSearchedLocations(address).enqueue(object : Callback<List<SearchedLocation>> {
@@ -41,7 +41,7 @@ object WeatherManager {
         context: Context,
         location: SearchedLocation?,
         onSuccessCall: (TemperatureResponse?) -> Unit,
-        unit: TemperatureUnit
+        temperaUnit: String
     ) {
         if (location == null) {
             onSuccessCall(null)
@@ -50,7 +50,7 @@ object WeatherManager {
         if (BuildConfig.DEBUG) {
             getDataFromMock(onSuccessCall)
         } else {
-            fetchDataFromBackend(context, location, onSuccessCall,unit)
+            fetchDataFromBackend(context, location, onSuccessCall, temperaUnit)
         }
     }
 
@@ -62,14 +62,14 @@ object WeatherManager {
         context: Context,
         location: SearchedLocation,
         onSuccessCall: (TemperatureResponse) -> Unit,
-        unit: TemperatureUnit
+        temperaUnit: String
     ) {
         val api = getApiBuilder(OPEN_METEO_BASE_URL)
 
         api.getTemperature(
             location.lat,
             location.lon,
-           temperature_unit = unit.celsius
+            temperature_unit = temperaUnit.lowercase(),
         ).enqueue(object : Callback<TemperatureResponse> {
             override fun onFailure(call: Call<TemperatureResponse>, t: Throwable) {
                 Toast.makeText(context, t.message, Toast.LENGTH_LONG).show()
@@ -80,6 +80,7 @@ object WeatherManager {
                 response: Response<TemperatureResponse>
             ) {
                 response.body()?.let { onSuccessCall(it) }
+                println("idasayswritesomethingstupidoverheresoyoucanfinditeasily" + response)
             }
         })
     }
