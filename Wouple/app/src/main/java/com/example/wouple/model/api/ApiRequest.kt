@@ -13,11 +13,14 @@ interface ApiRequest {
         @Query("longitude") longitude: String,
         @Query("hourly") hourly: String = "temperature_2m,relativehumidity_2m,dewpoint_2m,apparent_temperature,precipitation_probability,weathercode,visibility,windspeed_10m,uv_index,is_day",
         @Query("models") models: String = "best_match",
-        @Query("daily") daily: String = "temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum",
+        @Query("daily") daily: String = "temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,precipitation_probability_mean,precipitation_hours",
         @Query("timezone") timezone: String = "auto",
-        @Query("current_weather") current_weather: String = "true"
+        @Query("current_weather") current_weather: String = "true",
+        @Query("temperature_unit") temperature_unit: String
+
+
     ): Call<TemperatureResponse>
 
     @GET("https://geocode.maps.co/search")
-    fun getSearchedLocations(@Query("q") address: String): Call<List<SearchedLocations>>
-}
+    fun getSearchedLocations(@Query("q") address: String): Call<List<SearchedLocation>>
+    }

@@ -5,6 +5,8 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Daily(
+    val precipitation_hours: List<Int>,
+    val precipitation_probability_mean: List<Int>,
     val precipitation_sum: List<Double>,
     val rain_sum: List<Double>,
     val sunrise: List<String>,
