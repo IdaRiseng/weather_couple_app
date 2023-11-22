@@ -2,9 +2,11 @@ package com.example.wouple.manager
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.ui.text.toLowerCase
 import com.example.wouple.BuildConfig
+import com.example.wouple.model.api.AirQuality
 import com.example.wouple.model.api.ApiRequest
+import com.example.wouple.model.api.Current
+import com.example.wouple.model.api.CurrentUnits
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
 import retrofit2.Call
@@ -17,6 +19,7 @@ object WeatherManager {
 
     private const val OPEN_METEO_BASE_URL = "https://api.open-meteo.com"
     private const val GEOCODE_BASE_URL = "https://geocode.maps.co"
+    private const val AIR_QUALITY_BASE_URL = "https://air-quality-api.open-meteo.com"
     fun getSearchedLocations(
         context: Context,
         address: String,
@@ -37,6 +40,26 @@ object WeatherManager {
         })
     }
 
+    fun getAirQuality(
+        context: Context,
+        longitude: String,
+        latitude: String,
+        onSuccessCall: (AirQuality) -> Unit
+    ) {
+        val api = getApiBuilder(AIR_QUALITY_BASE_URL)
+        api.getAirQuality(longitude = longitude, latitude = latitude).enqueue(object : Callback<AirQuality> {
+            override fun onFailure(call: Call<AirQuality>, t: Throwable) {
+                Toast.makeText(context, t.message, Toast.LENGTH_LONG).show()
+            }
+
+            override fun onResponse(
+                call: Call<AirQuality>,
+                response: Response<AirQuality>
+            ) {
+                response.body()?.let { onSuccessCall(it) }
+            }
+        })
+    }
     fun getCurrentWeather(
         context: Context,
         location: SearchedLocation?,
@@ -80,7 +103,7 @@ object WeatherManager {
                 response: Response<TemperatureResponse>
             ) {
                 response.body()?.let { onSuccessCall(it) }
-                println("idasayswritesomethingstupidoverheresoyoucanfinditeasily" + response)
+                println("Temperature Response on the work" + response)
             }
         })
     }

@@ -1,10 +1,7 @@
 package com.example.wouple.activities.mainActivity
 
-import android.view.animation.OvershootInterpolator
-import android.window.SplashScreen
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -40,24 +37,20 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.RadioButton
-import androidx.compose.material.RadioButtonColors
 import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.BottomEnd
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -65,13 +58,10 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.LightGray
-import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.Color.Companion.Unspecified
 import androidx.compose.ui.graphics.Color.Companion.White
@@ -89,24 +79,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.wouple.R
-import com.example.wouple.activities.detailActivity.SecondCardView
 import com.example.wouple.activities.lightningMap.LightningMapActivity
 import com.example.wouple.activities.rainMap.WeatherRadarWebView
-import com.example.wouple.activities.splashScreen.Navigation
-import com.example.wouple.activities.splashScreen.SplashScreen
 import com.example.wouple.elements.HorizontalWave
 import com.example.wouple.elements.rememberPhaseState
+import com.example.wouple.model.api.AirQuality
+import com.example.wouple.model.api.Current
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Dark10
@@ -194,7 +178,7 @@ fun FirstCardView(
                                         text = location.display_name,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 16.sp,
-                                        color = Color.Black
+                                        color = Black
                                     )
                                 }
                             }
@@ -218,7 +202,18 @@ fun FirstCardView(
                     color = White,
                 )
                 Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                when (temp.current_weather.weathercode) {
+                val isDay = temp.current_weather.is_day == 1
+                 when {
+                    (temp.current_weather.weathercode in listOf(0, 1) && !isDay) -> LottieAnimationClear()
+                    (temp.current_weather.weathercode in listOf(0, 1) && isDay) -> LottieAnimationSun()
+                    (temp.current_weather.weathercode == 2 && isDay) -> LottieAnimationPartlyCloudy()
+                    (temp.current_weather.weathercode == 2 && !isDay) -> LottieAnimationPartlyCloudyNight()
+                    (temp.current_weather.weathercode == 3) -> LottieAnimationCloud()
+                    (temp.current_weather.weathercode in listOf(51, 53, 55,61, 63, 65,66,67,80,81,82)) -> LottieAnimationRain()
+                    (temp.current_weather.weathercode in listOf(85, 86)) -> LottieAnimationSnow()
+                    else -> LottieAnimationSun()
+                }
+              /*  when (temp.current_weather.weathercode) {
                     0, 1 -> LottieAnimationSun()
                     2 -> LottieAnimationPartlyCloudy()
                     3 -> LottieAnimationCloud()
@@ -227,7 +222,7 @@ fun FirstCardView(
                     else -> {
                         LottieAnimationSun()
                     }
-                }
+                }*/
                 Row(
                     modifier = Modifier.padding(bottom = 4.dp),
                     horizontalArrangement = Arrangement.Center
@@ -289,6 +284,22 @@ fun FirstCardView(
 }
 
 @Composable
+fun LottieAnimationClear() {
+    val isPlaying by remember { mutableStateOf(true) }
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.moonlottie))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        isPlaying = isPlaying,
+        iterations = LottieConstants.IterateForever // makes the animation keeps playing constantly
+    )
+    LottieAnimation(
+        composition = composition,
+        progress = progress,
+        modifier = Modifier.size(65.dp)
+    )
+}
+
+@Composable
 fun LottieAnimationSun() {
     val isPlaying by remember { mutableStateOf(true) }
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.sunlottieanimation))
@@ -319,11 +330,25 @@ fun LottieAnimationSnow() {
         modifier = Modifier.size(50.dp)
     )
 }
-
+@Composable
+fun LottieAnimationPartlyCloudyNight() {
+    val isPlaying by remember { mutableStateOf(true) }
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.cloudynightlottie))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        isPlaying = isPlaying,
+        iterations = LottieConstants.IterateForever // makes the animation keeps playing constantly
+    )
+    LottieAnimation(
+        composition = composition,
+        progress = progress,
+        modifier = Modifier.size(50.dp)
+    )
+}
 @Composable
 fun LottieAnimationPartlyCloudy() {
     val isPlaying by remember { mutableStateOf(true) }
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.partlycloudylottie))
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.partlycloudy))
     val progress by animateLottieCompositionAsState(
         composition,
         isPlaying = isPlaying,
@@ -364,7 +389,7 @@ fun LottieAnimationCloud() {
     LottieAnimation(
         composition = composition,
         progress = progress,
-        modifier = Modifier.size(55.dp)
+        modifier = Modifier.size(60.dp)
     )
 }
 
@@ -627,7 +652,7 @@ fun SearchBar(
     var query by remember { mutableStateOf("") }
     val gradient = Brush.horizontalGradient(
         colors = if (isSearchExpanded) listOf(White, Color(0xFF56CCF2))
-        else listOf(Color.Transparent, Color.Transparent)
+        else listOf(Transparent, Transparent)
     )
     Row(
         modifier = Modifier
@@ -701,7 +726,7 @@ fun SearchBar(
             Icon(
                 imageVector = if (isSearchExpanded) Icons.Default.Clear else Icons.Default.Search,
                 contentDescription = "Search",
-                tint = if (isSearchExpanded) Color.Black else White,
+                tint = if (isSearchExpanded) Black else White,
                 modifier = Modifier.size(32.dp)
             )
         }

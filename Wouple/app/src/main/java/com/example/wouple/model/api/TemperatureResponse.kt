@@ -17,8 +17,6 @@ data class TemperatureResponse(
     val timezone: String,
     val timezone_abbreviation: String,
     val utc_offset_seconds: Int,
-    val precipitation_probability_max: Int,
-    val precipitation_hours: Int
 ) : Parcelable {
 
     companion object {
@@ -56,8 +54,6 @@ data class TemperatureResponse(
                 temperature_2m_min = listOf(13.7, 12.6, 16.4, 14.8, 14.4, 14.7, 13.5),
                 time = listOf("2023-08-10", "2023-08-11", "2023-08-12", "2023-08-13", "2023-08-14", "2023-08-15", "2023-08-16"),
                 uv_index_max = listOf(5.2, 5.3, 5.25, 5.15, 4.5, 3.2, 4.05),
-                precipitation_probability_mean = listOf(30,40,50,60),
-                precipitation_hours = listOf(0,3,5,6,7),
                 weathercode = listOf(3, 3, 51, 61, 80, 63, 3)
             ),
             daily_units = DailyUnits(
@@ -1963,8 +1959,6 @@ data class TemperatureResponse(
             timezone = "Europe/Oslo",
             timezone_abbreviation = "CEST",
             utc_offset_seconds = 7200,
-            precipitation_probability_max = 100,
-            precipitation_hours = 3
         )
     }
 }
