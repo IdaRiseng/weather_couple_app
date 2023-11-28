@@ -8,7 +8,10 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.example.wouple.activities.detailActivity.SecondActivity
 import com.example.wouple.activities.mainActivity.MainActivity
 import com.example.wouple.activities.splashScreen.Navigation
@@ -73,4 +76,3 @@ class StartActivity : ComponentActivity() {
         )
     }
 }
-

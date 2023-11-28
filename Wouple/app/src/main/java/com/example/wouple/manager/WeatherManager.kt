@@ -5,8 +5,6 @@ import android.widget.Toast
 import com.example.wouple.BuildConfig
 import com.example.wouple.model.api.AirQuality
 import com.example.wouple.model.api.ApiRequest
-import com.example.wouple.model.api.Current
-import com.example.wouple.model.api.CurrentUnits
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
 import retrofit2.Call

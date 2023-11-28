@@ -1,6 +1,13 @@
 package com.example.wouple.activities.mainActivity
 
 import android.content.Intent
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,10 +45,12 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -57,6 +66,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.wouple.R
 import com.example.wouple.activities.detailActivity.SecondActivity
+import com.example.wouple.activities.startScreen.StartActivity
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.ui.theme.Corn
 import com.example.wouple.ui.theme.Dark10
@@ -69,65 +79,25 @@ import com.example.wouple.ui.theme.vintage
 fun NoTemperatureView(
     onStartButtonClicked: () -> Unit,
 ) {
+    val colors = listOf(
+        Color(0xFF1D244D),
+        Color(0xFF25508C),
+        Color(0xFF4180B3),
+        Color(0xFF8ABFCC),
+        Color(0xFFC0DDE1),
+    )
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Dark10),
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = colors,
+                )
+            ),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = CenterHorizontally
 
     ) {
-        /*  Spacer(modifier = Modifier.padding(16.dp))
-          Text(
-              modifier = Modifier.padding(12.dp),
-              textAlign = TextAlign.Center,
-              text = "Sun, Rain, or Snow – Know Before You Go!",
-              fontWeight = FontWeight.Normal,
-              fontFamily = FontFamily.Default,
-              fontSize = 16.sp,
-              color = Spiro,
-          )
-          SimpleSearchBar(onSearch)
-          if (locations != null) {
-              LazyColumn(
-                  modifier = Modifier.fillMaxSize(),
-                  contentPadding = PaddingValues(vertical = 4.dp)
-              ) {
-                  items(locations) { location ->
-                      Card(
-                          modifier = Modifier
-                              .fillMaxWidth()
-                              .padding(vertical = 4.dp, horizontal = 16.dp)
-                              .clip(RoundedCornerShape(30.dp))
-                              .clickable {
-                                  searchedLocation.value = location
-                                  onLocationButtonClicked(location)
-                              },
-                          elevation = 4.dp,
-                          backgroundColor = White
-                      ) {
-                          Row(
-                              modifier = Modifier
-                                  .fillMaxWidth()
-                                  .padding(12.dp),
-                              verticalAlignment = CenterVertically
-                          ) {
-                              Icon(
-                                  painter = painterResource(id = R.drawable.pin),
-                                  contentDescription = null,
-                                  tint = Color.Unspecified
-                              )
-                              Text(
-                                  text = location.display_name,
-                                  fontWeight = FontWeight.Bold,
-                                  fontSize = 16.sp,
-                                  color = Color.Black
-                              )
-                          }
-                      }
-                  }
-              }
-          }*/
         Spacer(modifier = Modifier.weight(1f))
         Image(
             painter = painterResource(id = R.drawable.bluecloud),
@@ -139,7 +109,7 @@ fun NoTemperatureView(
             modifier = Modifier
                 .align(CenterHorizontally),
             textAlign = TextAlign.Center,
-            text = "Weather",
+            text = "NorthFlurry",
             fontWeight = FontWeight.Light,
             fontFamily = FontFamily.Default,
             fontSize = 32.sp,
@@ -149,9 +119,9 @@ fun NoTemperatureView(
             modifier = Modifier
                 .align(CenterHorizontally),
             textAlign = TextAlign.Center,
-            text = "WOUPLE FORECAST",
+            text = "Weather Forecast",
             fontWeight = FontWeight.Light,
-            fontFamily = FontFamily.Default,
+            fontFamily = FontFamily.SansSerif,
             fontSize = 32.sp,
             color = Corn,
         )
@@ -179,66 +149,5 @@ fun NoTemperatureView(
             )
         }
         Spacer(modifier = Modifier.weight(2f))
-    }
-}
-@Composable
-fun SimpleSearchBar(
-    onSearch: (String) -> Unit,
-) {
-    var query by remember { mutableStateOf("") }
-    val gradient = Brush.horizontalGradient(
-        colors = listOf(White, Color(0xFF56CCF2))
-    )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 4.dp)
-            .padding(horizontal = 24.dp)
-            .height(55.dp)
-            .background(
-                brush = gradient,
-                shape = RoundedCornerShape(28.dp)
-            ),
-        verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.Start
-    ) {
-        TextField(
-            value = query,
-            maxLines = 1,
-            onValueChange = {
-                query = it
-                onSearch(it)
-            },
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 18.dp),
-            textStyle = TextStyle(
-                color = Color.Black,
-                fontSize = 18.sp,
-            ),
-            placeholder = {
-                Text(
-                    modifier = Modifier.padding(start = 24.dp),
-                    text = "Search a city or airport",
-                    color = Color.Black.copy(alpha = 0.7f)
-                )
-            },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search,
-                capitalization = KeyboardCapitalization.Characters,
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    onSearch(query)
-                }
-            ),
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Spiro,
-            )
-        )
     }
 }

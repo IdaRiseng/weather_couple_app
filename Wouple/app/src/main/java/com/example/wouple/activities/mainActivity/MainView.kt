@@ -96,7 +96,7 @@ import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.ui.theme.Dark10
 import com.example.wouple.ui.theme.Dark20
 import com.example.wouple.ui.theme.Spiro
-
+import com.example.wouple.ui.theme.Whitehis
 
 
 /*@Preview(showBackground = true)
@@ -132,11 +132,22 @@ fun FirstCardView(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
+        val colors = listOf(
+            Color(0xFF1D244D),
+            Color(0xFF25508C),
+            Color(0xFF4180B3),
+            Color(0xFF8ABFCC),
+            Color(0xFFC0DDE1),
+        )
         Box(
             modifier = Modifier
                 .fillMaxHeight(0.5f)
                 .fillMaxWidth()
-                .background(Dark10)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = colors
+                    )
+                )
                 .padding(bottom = 18.dp),
         ) {
             Column(
@@ -348,7 +359,7 @@ fun LottieAnimationPartlyCloudyNight() {
 @Composable
 fun LottieAnimationPartlyCloudy() {
     val isPlaying by remember { mutableStateOf(true) }
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.partlycloudy))
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.partlycloudylottie))
     val progress by animateLottieCompositionAsState(
         composition,
         isPlaying = isPlaying,
@@ -429,7 +440,7 @@ fun DetailButton(onDetailsButtonClicked: () -> Unit) {
 @Composable
 fun DropDownMenu(onTemperatureUnitChanged: (String) -> Unit) {
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedTemperatureUnit by remember { mutableStateOf("") }
+    var selectedTemperatureUnit by remember { mutableStateOf("celsius") }
     Box(
         modifier = Modifier
             .padding(start = 16.dp)
@@ -440,7 +451,7 @@ fun DropDownMenu(onTemperatureUnitChanged: (String) -> Unit) {
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.menuicon), contentDescription = null,
-                modifier = Modifier.size(30.dp), tint = White,
+                modifier = Modifier.size(30.dp), tint = White.copy(alpha = 0.9f),
             )
         }
         DropdownMenu(

@@ -30,8 +30,10 @@ val Spir = Color(0xFF11C3FD)
 val ColdBlue = Color(0xFF107DAC)
 val Somethingg = Color(0xFF1D1C1C)
 val PagerColor = Color(0xFF2F2F2F)
-val some = Color(0xFF05C29D)
+val some = Color(0xFF0B3146)
 val vintage = Color(0xFFF8C35F)
+val turquoise = Color(0xFF40E0D0)
+val northerner = Color(0xFF25508C)
 
 
 

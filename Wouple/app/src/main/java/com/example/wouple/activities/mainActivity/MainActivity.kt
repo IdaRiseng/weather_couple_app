@@ -13,11 +13,9 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.wouple.activities.startScreen.StartActivity
 import com.example.wouple.activities.detailActivity.SecondActivity
 import com.example.wouple.manager.WeatherManager
-import com.example.wouple.manager.WeatherManager.getAirQuality
 import com.example.wouple.manager.WeatherManager.getCurrentWeather
 import com.example.wouple.manager.WeatherManager.getSearchedLocations
 import com.example.wouple.model.api.AirQuality
-import com.example.wouple.model.api.CurrentUnits
 import com.example.wouple.model.api.SearchedLocation
 import com.example.wouple.model.api.TemperatureResponse
 import com.example.wouple.preferences.LocationPref
@@ -45,6 +43,9 @@ class MainActivity : ComponentActivity() {
                             sharedPreferences.edit().putBoolean("isFirstLaunch", false).apply()
                             val intent = Intent(this@MainActivity, StartActivity::class.java)
                             startActivity(intent)
+                            val secondIntent = Intent(this, StartActivity::class.java)
+                            intent.putExtra("searchVisible", true) // Set the searchVisible value
+                            startActivity(secondIntent)
                             finish()
                         }
                     )
@@ -90,6 +91,11 @@ class MainActivity : ComponentActivity() {
                             onSuccessCall = { temperature ->
                                 temp.value = temperature
                             })
+                        searchedLocation.value?.let {
+                            getAirQuality(
+                                it
+                            )
+                        }
                     }
                 )
             }
@@ -115,6 +121,11 @@ class MainActivity : ComponentActivity() {
                 temp.value = temperature
             }, temperaUnit = TemperatureUnitPref.getTemperatureUnit(this)
         )
+        searchedLocation.value?.let {
+            getAirQuality(
+                it
+            )
+        }
         searchedLocations.value = null
     }
 
